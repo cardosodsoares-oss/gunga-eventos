@@ -1,0 +1,907 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gunga Eventos — Gestão de eventos</title><style>:root{font-family:system-ui,Arial,sans-serif;color:#f6f0df;background:#111b17}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#254133,#101914 70%)}main{max-width:520px;margin:0 auto;padding:28px 18px 60px}.brand{text-align:center;margin:28px 0 34px}.brand .mark{font-size:45px;color:#d9b46c}.brand h1{font-family:Georgia,serif;font-size:40px;margin:0;color:#e9c77d}.brand small{letter-spacing:5px;color:#ddd0a7}.brand p{font-size:13px;color:#c8c7ba}.panel{background:#1b2a22;border:1px solid #526247;border-radius:20px;padding:24px;box-shadow:0 20px 50px #0005}h2{font-size:21px;margin:0 0 18px}label{display:block;margin:14px 0 6px;font-size:13px;color:#e2d7b6}input,textarea{display:block;width:100%;background:#0f1a15;color:#fff;border:1px solid #66735b;border-radius:10px;padding:13px;font-size:16px}button{width:100%;border:0;border-radius:10px;background:#d4af66;color:#17241b;padding:13px;font-weight:800;margin-top:18px;cursor:pointer;font-size:15px}button.secondary{background:#314a3b;color:#f6f0df;border:1px solid #72836c}button:disabled{opacity:.5;cursor:wait}.muted{color:#c1c5b8;font-size:13px;line-height:1.6}.notice{margin:15px 0;padding:12px;border-radius:10px;background:#2c392f;color:#fff;white-space:pre-wrap;overflow-wrap:anywhere}.error{background:#592b2b}.hidden{display:none!important}.pill{display:inline-block;background:#405842;padding:5px 10px;border-radius:20px;font-size:12px}.event{border:1px solid #60715a;border-radius:12px;padding:14px;margin:12px 0;background:#15221b}.event strong{display:block}.row{display:flex;gap:10px}.row button{flex:1}footer{text-align:center;margin-top:28px;color:#a8b4a6;font-size:12px}select{display:block;width:100%;background:#0f1a15;color:#fff;border:1px solid #66735b;border-radius:10px;padding:13px;font-size:16px}.payment-form{margin-top:18px;padding-top:12px;border-top:1px solid #526247}.payment-form h4{margin-bottom:6px}.payment-form .row button{margin-top:8px} .cash-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:15px 0}.cash-tile{border:1px solid #60715a;border-radius:12px;padding:12px;background:#15221b;min-width:0}.cash-tile strong{display:block;margin-top:5px;font-size:19px;color:#e9c77d;overflow-wrap:anywhere}.installment-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:9px 0}.installment-row label{margin:0}.installment-row input{margin-top:5px}.installment-box{border:1px solid #526247;border-radius:12px;padding:12px;margin-top:12px}.installment-box h4{margin:0 0 8px}.help{font-size:12px;color:#c1c5b8} .nav-away{display:none!important}.nav-bar{display:flex;gap:10px;align-items:center;margin:0 0 18px}.nav-bar button{margin:0}.nav-bar .secondary{width:auto;flex:0 0 auto}.nav-bar strong{font-size:15px;line-height:1.4}.home-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}.home-actions button{margin:0}.nav-view-title{color:#e9c77d}.module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}.module-card{display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:115px;margin:0;padding:14px 10px;text-align:center;background:#20392b;border:1px solid #71815f;color:#f6f0df;border-radius:15px;gap:8px}.module-card .module-icon{font-size:26px;color:#e9c77d}.event-open{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left}.event-open .event-arrow{font-size:24px;color:#e9c77d}.nav-bar{flex-wrap:wrap}.nav-bar #navHome{font-size:12px}.nav-bar strong{flex-basis:100%}#archivedEventsBtn{margin-top:14px}</style></head><body><main><div class="brand"><div class="mark">◉</div><h1>Gunga</h1><small>EVENTOS</small><p>Quem conduz a roda, organiza tudo.</p></div><section class="panel" id="login"><h2>Entrar no aplicativo</h2><p class="muted">Use o e-mail e a senha da conta criada no Supabase.</p><form id="loginForm"><label for="email">E-mail</label><input id="email" type="email" autocomplete="username" required><label for="password">Senha</label><input id="password" type="password" autocomplete="current-password" required><button id="loginBtn" type="submit">Entrar</button></form><div id="loginMsg" class="notice hidden" role="status"></div><p class="muted">Participantes convidados entram com e-mail e senha. Visitantes podem se inscrever sem login usando o link público do evento.</p></section><section class="panel hidden" id="publicRegistration"><h2>Inscrição no evento</h2><div id="publicEventInfo" class="muted"></div><div id="publicMsg" class="notice hidden" role="status"></div><form id="publicRegistrationForm"><label>Nome completo</label><input name="full_name" maxlength="200" required><label>Nome de capoeira</label><input name="nickname" maxlength="100"><label>Graduação</label><input name="graduation" maxlength="100"><label>Grupo de capoeira</label><input name="capoeira_group" maxlength="150"><label>WhatsApp com DDD</label><input name="whatsapp" maxlength="30" required><label>Modalidade</label><select name="modality_id" required><option value="">Carregando modalidades...</option></select><p id="publicModalityDetail" class="muted"></p><div id="publicShirtWrap"><label>Tamanho da camisa</label><select name="shirt_size"><option value="">Sem camisa</option><option>PP</option><option>P</option><option>M</option><option>G</option><option>GG</option><option>XG</option><option>G1</option><option>G2</option><option>G3</option></select></div><p class="muted">Pagamento de visitante: a inscrição ficará pendente até aprovação do administrador. Para cortesia, informe o código abaixo.</p><label>Código de cortesia (opcional)</label><input name="courtesy_code" autocomplete="off"><button type="submit" id="publicSubmit">Enviar inscrição</button></form><button class="secondary" type="button" id="publicBack">Voltar ao login</button></section><section class="panel hidden" id="activate"><h2>Ativar sua conta</h2><p class="muted">Convite recebido! Crie sua senha para entrar no Gunga Eventos.</p><form id="activateForm"><label>Nova senha (mínimo 8 caracteres)</label><input id="newPassword" type="password" minlength="8" autocomplete="new-password" required><label>Confirme a senha</label><input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required><button id="activateBtn" type="submit">Criar senha</button></form><div id="activateMsg" class="notice hidden" role="status"></div></section><section class="panel hidden" id="dashboard"><span class="pill" id="role">Verificando...</span><h2 style="margin-top:14px">Bem-vindo ao Gunga Eventos!</h2><p class="muted" id="user"></p><div id="dashMsg" class="notice hidden" role="status"></div><div id="navBar" class="nav-bar hidden"><button id="navBack" type="button" class="secondary">← Voltar</button><button id="navHome" type="button" class="secondary">⌂ Menu principal</button><strong id="navTitle" class="nav-view-title"></strong></div><div id="homeActions" class="home-actions"><button id="navCreate" type="button" class="secondary hidden">Criar evento</button><button id="navProfile" type="button" class="secondary">Meu perfil</button></div><h3 id="eventsHeading">Meus eventos</h3><div id="events"></div><button id="archivedEventsBtn" type="button" class="secondary">▣ Eventos arquivados</button><section id="archivedEventsSection" class="hidden"><h3>Eventos arquivados</h3><p class="muted">Histórico para consulta. Os eventos arquivados não aparecem na lista principal.</p><div id="archivedEventsList"></div></section><section id="eventMenuSection" class="hidden"><h3 id="eventMenuName"></h3><p id="eventMenuInfo" class="muted"></p><div id="eventMenuCards" class="module-grid"></div></section><section id="registrationAdminSection" class="hidden">
+<h3>Inscrições do evento</h3><p id="registrationAdminEvent" class="muted"></p><div id="registrationAdminMsg" class="notice hidden" role="status"></div>
+<div class="cash-grid"><div class="cash-tile">Confirmadas<strong id="registrationConfirmed">0</strong></div><div class="cash-tile">Pendentes<strong id="registrationPending">0</strong></div></div>
+<h4>1. Configuração geral</h4>
+<form id="registrationSettingsForm"><label>Link do grupo WhatsApp</label><input name="whatsapp_group_url" type="url" placeholder="https://chat.whatsapp.com/..."><button type="submit">Salvar link do grupo</button></form>
+<h4>2. Modalidades de inscrição</h4><p class="muted">Crie modalidades com preços próprios para visitantes e adicionais opcionais para contribuintes quitados.</p>
+<form id="modalityForm"><input name="modality_id" type="hidden">
+<label>Nome da modalidade</label><input name="name" maxlength="120" required placeholder="Ex.: Inscrição com camisa e hospedagem">
+<label>Descrição / benefícios</label><textarea name="description" rows="3" maxlength="1000"></textarea>
+<label>Valor para visitante (R$)</label><input name="price" type="number" min="0" step="0.01" required value="0">
+<label>Inclui camisa?</label><select name="includes_shirt"><option value="true">Sim</option><option value="false">Não</option></select>
+<label>Disponível para contribuinte quitado?</label><select name="available_to_contributors"><option value="true">Sim</option><option value="false">Não</option></select>
+<label>Adicional para contribuinte (R$)</label><input name="contributor_price" type="number" min="0" step="0.01" required value="0">
+<label>Modalidade ativa?</label><select name="active"><option value="true">Sim</option><option value="false">Não</option></select>
+<button type="submit" id="saveModality">Salvar modalidade</button><button type="button" id="clearModality" class="secondary">Nova modalidade / limpar formulário</button></form>
+<div id="modalityList"></div>
+<h4>3. Cortesias por modalidade</h4><label>Modalidade liberada pela cortesia</label><select id="courtesyModality"><option value="">Selecione uma modalidade</option></select><button id="generateCourtesy" type="button" class="secondary">Gerar código exclusivo</button><div id="courtesyResult" class="notice hidden"></div>
+<h4>4. Participantes inscritos</h4><div id="registrationAdminList"></div><button type="button" id="refreshRegistrations" class="secondary">Atualizar inscrições</button>
+<h4>5. Abertura das inscrições</h4><p class="muted">O link é preparado para o Netlify, mesmo quando você abre o aplicativo pelo computador. O agendamento de início e encerramento automático será configurado na próxima etapa do banco de dados.</p><div class="event"><strong>Controle de abertura</strong><p id="registrationOpenStatus" class="muted">Consultando situação...</p><p class="muted">Confira as modalidades antes de liberar o formulário. Apenas administradores podem abrir ou encerrar inscrições.</p><button id="toggleRegistrationOpen" type="button">Liberar inscrições</button></div>
+<div id="registrationLinkBox" class="hidden"><label>Link público de inscrição</label><input id="registrationLinkPreview" readonly aria-label="Link de inscrição"><button id="copyRegistrationLink" type="button" class="secondary">Copiar link público</button></div>
+</section>
+<section id="contributorRegistrationSection" class="hidden"><h3>Minha inscrição</h3><p id="contributorRegistrationEvent" class="muted"></p><div id="contributorRegistrationMsg" class="notice hidden" role="status"></div><p class="muted">Após quitar sua contribuição, escolha uma modalidade. Algumas podem exigir pagamento adicional.</p><form id="contributorRegistrationForm"><label>Modalidade</label><select name="modality_id" required><option value="">Carregando...</option></select><p id="contributorModalityDetail" class="muted"></p><div id="contributorShirtWrap"><label>Tamanho da camisa</label><select name="shirt_size"><option value="">Selecione</option><option>PP</option><option>P</option><option>M</option><option>G</option><option>GG</option><option>XG</option><option>G1</option><option>G2</option><option>G3</option></select></div><button type="submit">Solicitar minha inscrição</button></form></section><section id="contributionAdminSection" class="hidden"><h3>Gerenciar contribuições</h3><p class="muted" id="contributionEventLabel"></p><div id="contributionMsg" class="notice hidden" role="status"></div><form id="contributionForm"><label for="contributorSelect">Participante</label><select id="contributorSelect" required><option value="">Selecione</option></select><label for="contributionAmount">Valor total (R$)</label><input id="contributionAmount" type="number" min="0.01" step="0.01" required><label for="contributionDescription">Descrição (opcional)</label><input id="contributionDescription" maxlength="300" placeholder="Ex.: Contribuição anual"><label for="installmentType">Tipo de parcelamento</label><select id="installmentType"><option value="equal">Parcelamento fixo</option><option value="free">Contribuição livre</option></select><div id="equalInstallmentFields"><label for="installmentCount">Quantidade de parcelas (1 a 120)</label><input id="installmentCount" type="number" min="1" max="120" value="5" required><label for="firstDueDate">Primeiro vencimento</label><input id="firstDueDate" type="date" required></div><div id="freeContributionFields" class="hidden"><label for="freeDeadline">Data limite para pagar</label><input id="freeDeadline" type="date"><p class="help">O participante poderá pagar valores variados até essa data.</p></div><div id="flexibleInstallmentFields" class="hidden"><p class="help">Preencha valores e vencimentos. A soma deve corresponder ao valor total.</p><div id="flexibleRows"></div><button type="button" class="secondary" id="addFlexibleRow">Adicionar parcela</button><p class="muted" id="flexibleSum"></p></div><p class="muted" id="contributionPreview"></p><button type="submit" id="contributionSubmit">Cadastrar contribuição</button></form><h4>Contribuições do evento</h4><div id="eventContributionList"></div><button type="button" class="secondary" id="contributionRefresh">Atualizar contribuições</button></section><section id="financeSection" class="hidden"><h3>Minhas contribuições</h3><p class="muted" id="financeEventLabel">Selecione um evento acima para consultar.</p><div id="financeMsg" class="notice hidden" role="status"></div><div id="financeSummary"></div></section><section id="paymentSection" class="hidden"><h3>Registrar pagamento</h3><p class="muted" id="paymentContext"></p><div id="paymentContent"></div></section><section id="cashSection" class="hidden"><div id="cashActivityMenu"><h3>Caixa do evento</h3><p class="muted">Selecione a atividade que deseja abrir.</p><div id="cashActivityCards" class="module-grid"></div></div><div id="cashActivityContent" class="hidden"><h3 id="cashActivityTitle"></h3><p class="muted" id="cashEventLabel"></p><div id="cashMsg" class="notice hidden" role="status"></div><div id="cashSummary"></div><h4>Extrato de movimentações</h4><div id="cashStatement"></div><button type="button" class="secondary" id="cashRefresh">Atualizar caixa</button><div id="expenseSection" class="hidden"><h3>Registrar despesa</h3><p class="muted">Disponível para administradores e tesoureiros. Comprovante obrigatório (PDF, JPG ou PNG, até 10 MB).</p><form id="expenseForm"><label for="expenseAmount">Valor (R$)</label><input id="expenseAmount" type="number" min="0.01" step="0.01" required><label for="expenseDate">Data da despesa</label><input id="expenseDate" type="date" required><label for="expenseCategory">Categoria</label><select id="expenseCategory" required><option value="">Selecione</option><option>Alimentação</option><option>Transporte</option><option>Hospedagem</option><option>Material</option><option>Estrutura</option><option>Serviços</option><option>Outros</option></select><label for="expenseDescription">Descrição</label><textarea id="expenseDescription" rows="3" maxlength="1000" required></textarea><label for="expenseReceipt">Comprovante</label><input id="expenseReceipt" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required><button type="submit" id="expenseSubmit">Salvar despesa</button></form><div id="expenseMsg" class="notice hidden" role="status"></div></div><section id="cancellationSection" class="hidden"><h3>Cancelamento de despesas</h3><p class="muted">Tesoureiros podem solicitar. Somente administradores aprovam ou rejeitam. Solicitações pendentes não alteram o saldo.</p><div id="cancellationMsg" class="notice hidden" role="status"></div><h4>Solicitações</h4><div id="cancellationRequests"></div><h4>Histórico de despesas canceladas</h4><div id="cancelledExpenses"></div><button type="button" class="secondary" id="cancellationRefresh">Atualizar solicitações</button></section></section></div><section id="approvalSection" class="hidden"><h3>Aprovação de pagamentos</h3><p class="muted" id="approvalEventLabel"></p><div id="approvalMsg" class="notice hidden" role="status"></div><div id="approvalList"></div></section><section id="membersSection" class="hidden"><h3>Participantes do evento</h3><p class="muted" id="selectedEventLabel">Selecione um evento acima.</p><div id="memberControls" class="hidden"><form id="memberForm"><label for="memberEmail">E-mail do participante para convite</label><input id="memberEmail" type="email" required placeholder="participante@exemplo.com"><button type="submit" id="memberBtn">Enviar convite / vincular participante</button></form><div id="memberMsg" class="notice hidden" role="status"></div><h3>Gerenciar equipe</h3><p class="muted">O administrador global mantém o controle do sistema. Escolha o administrador designado para este evento e até dois tesoureiros. O cargo principal não é transferido.</p><div id="teamSelectors"></div><div id="teamMsg" class="notice hidden" role="status"></div><h3>Participantes vinculados</h3><div id="memberList"></div></div></section><div id="createSection" class="hidden"><h3>Criar evento</h3><form id="eventForm"><label for="eventName">Nome do evento</label><input id="eventName" required placeholder="Ex.: Encontro de Capoeira 2027"><label for="eventDate">Data (opcional)</label><input id="eventDate" type="date"><button type="submit" id="eventBtn">Criar evento</button></form></div><section id="profileSection" class="hidden" style="margin-top:24px"><h3>Meu perfil de capoeira</h3><p class="muted">Seus dados ficam salvos para os próximos eventos. O tamanho de camisa é uma preferência e poderá mudar em cada inscrição.</p><form id="profileForm"><label for="fullName">Nome completo</label><input id="fullName" maxlength="150" autocomplete="name" required><label for="nickname">Nome de capoeira</label><input id="nickname" maxlength="100" placeholder="Ex.: Falcão"><label for="graduation">Graduação</label><input id="graduation" maxlength="100" placeholder="Ex.: Contramestre"><label for="capoeiraGroup">Grupo de capoeira</label><input id="capoeiraGroup" maxlength="120"><label for="whatsapp">WhatsApp com DDD</label><input id="whatsapp" inputmode="tel" maxlength="20" placeholder="(63) 99999-9999"><label for="shirtSize">Tamanho de camisa preferido</label><select id="shirtSize" style="display:block;width:100%;background:#0f1a15;color:#fff;border:1px solid #66735b;border-radius:10px;padding:13px;font-size:16px"><option value="">Selecione</option><option>PP</option><option>P</option><option>M</option><option>G</option><option>GG</option><option>XG</option><option>G1</option><option>G2</option><option>G3</option><option>G4</option><option>G5</option><option>Infantil 2</option><option>Infantil 4</option><option>Infantil 6</option><option>Infantil 8</option><option>Infantil 10</option><option>Infantil 12</option><option>Infantil 14</option></select><button id="profileBtn" type="submit">Salvar meu perfil</button></form><div id="profileMsg" class="notice hidden" role="status"></div></section><button class="secondary" id="logout">Sair da conta</button></section><footer>Gunga Eventos · Controle financeiro e cancelamentos</footer></main><script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const hashParams=new URLSearchParams(location.hash.slice(1)), queryParams=new URLSearchParams(location.search);
+const inviteLink=['invite','recovery'].includes(hashParams.get('type')) || ['invite','recovery'].includes(queryParams.get('type'));
+if(inviteLink)sessionStorage.setItem('gunga_invite_pending','1');
+const supabase=createClient('https://rephetpwhmwtctcdqckq.supabase.co','sb_publishable_L-Phgqwq4qYj6J_GcZJbDg_jesQJoH_');
+const $=id=>document.getElementById(id);let currentUser=null;let admin=false;let selectedEvent=null;let financeEvent=null;let eventPermissions=new Map();
+function message(id,text,error=false){const el=$(id);el.textContent=text;el.classList.remove('hidden');el.classList.toggle('error',error)}
+function clearMessage(id){$(id).classList.add('hidden')}
+function toggle(logged){$('login').classList.toggle('hidden',logged);$('dashboard').classList.toggle('hidden',!logged);$('activate').classList.add('hidden')}
+function showActivation(){$('login').classList.add('hidden');$('dashboard').classList.add('hidden');$('activate').classList.remove('hidden')}
+function errorText(e){return e?.message||'Ocorreu um erro. Tente novamente.'}
+// Navegacao de tela unica: apenas um modulo visivel por vez.
+const navSections=['archivedEventsSection','eventMenuSection','contributionAdminSection','financeSection','paymentSection','cashSection','approvalSection','membersSection','createSection','profileSection','registrationAdminSection','contributorRegistrationSection'];
+let activeView='home';
+function showView(sectionId,title=''){
+ activeView=sectionId||'home';
+ const home=activeView==='home';
+ for(const id of ['role','user','dashMsg','homeActions','eventsHeading','events','archivedEventsBtn','logout'])$(id).classList.toggle('nav-away',!home);
+ $('navBar').classList.toggle('hidden',home);
+ $('navTitle').textContent=title;
+ for(const id of navSections){
+  const visible=!home&&id===activeView;
+  $(id).classList.toggle('hidden',!visible);
+  $(id).classList.toggle('nav-away',!visible);
+ }
+ window.scrollTo({top:0,behavior:'instant'});
+}
+let menuEvent=null, cashTab='menu', eventReadOnly=false;
+const navHistory=[];
+function navigate(view,title=''){if(activeView!==view)navHistory.push({view:activeView,title:$('navTitle').textContent});showView(view,title)}
+function home(){navHistory.length=0;eventReadOnly=false;showView('home')}
+$('navHome').addEventListener('click',home);
+$('navBack').addEventListener('click',()=>{
+ if(activeView==='cashSection'&&cashTab!=='menu'){setCashTab('menu');return}
+ const prev=navHistory.pop();if(!prev){home();return}
+ if(activeView==='paymentSection'&&prev.view==='financeSection'&&financeEvent){showView(prev.view,prev.title);loadMyContributions(financeEvent)}
+ else showView(prev.view,prev.title);
+});
+function tile(label,icon,handler){const b=document.createElement('button');b.type='button';b.className='module-card';const i=document.createElement('span');i.className='module-icon';i.textContent=icon;const t=document.createElement('span');t.textContent=label;b.append(i,t);b.addEventListener('click',handler);return b}
+function openEventMenu(e,readOnly=false){menuEvent=e;eventReadOnly=readOnly;
+ $('eventMenuName').textContent=e.name;$('eventMenuInfo').textContent=(e.event_date?'Data: '+e.event_date+' · ':'')+(readOnly?'Arquivado · somente consulta':'Situação: '+e.status);
+ const box=$('eventMenuCards');box.replaceChildren();const perms=eventPermissions.get(e.id)||{};
+ box.append(tile('Minhas contribuições','◉',()=>{navigate('financeSection','Minhas contribuições · '+e.name);loadMyContributions(e)}));
+ box.append(tile('Caixa do evento','▤',()=>{navigate('cashSection','Caixa · '+e.name);setCashTab('menu');loadEventCash(e)}));
+ if(perms.canManage&&!readOnly)box.append(tile('Liberar / gerenciar inscrições','✍',()=>{navigate('registrationAdminSection','Inscrições · '+e.name);openRegistrationAdmin(e)}));
+ if(!readOnly)box.append(tile('Minha inscrição','▣',()=>{navigate('contributorRegistrationSection','Minha inscrição · '+e.name);openContributorRegistration(e)}));
+ if(perms.canManage&&!readOnly)box.append(tile('Gerenciar contribuições','▦',()=>{navigate('contributionAdminSection','Contribuições · '+e.name);openContributionManager(e)}));
+ if((perms.canManage||perms.canTreasury)&&!readOnly)box.append(tile('Aprovar pagamentos','✓',()=>{navigate('approvalSection','Aprovações · '+e.name);loadPendingApprovals(e)}));
+ if(perms.canManage&&!readOnly)box.append(tile('Gerenciar equipe','♙',()=>{navigate('membersSection','Equipe · '+e.name);selectEvent(e)}));
+  if(perms.canManage){
+   if(readOnly){
+    box.append(tile('Restaurar evento','↺',()=>restoreSelectedEvent(e)));
+   }else{
+    box.append(tile('Arquivar evento','▣',()=>archiveSelectedEvent(e)));
+    box.append(tile('Excluir evento','×',()=>deleteSelectedEvent(e)));
+   }
+  }
+ navigate('eventMenuSection',e.name);
+}
+
+async function archiveSelectedEvent(e){
+ if(!currentUser||!eventPermissions.get(e.id)?.canManage)return;
+ if(!window.confirm('Arquivar o evento "'+e.name+'"? Ele ficará disponível para consulta, sem novos lançamentos.'))return;
+ try{
+  const {error}=await supabase.rpc('archive_event',{p_event_id:e.id});
+  if(error)throw error;
+  home();await loadEvents();message('dashMsg','Evento arquivado com sucesso.');
+ }catch(err){alert('Não foi possível arquivar: '+errorText(err))}
+}
+async function restoreSelectedEvent(e){
+ if(!currentUser||!eventPermissions.get(e.id)?.canManage)return;
+ if(!window.confirm('Restaurar o evento "'+e.name+'"? Ele voltará como encerrado.'))return;
+ try{
+  const {error}=await supabase.rpc('restore_event',{p_event_id:e.id});
+  if(error)throw error;
+  home();await loadEvents();message('dashMsg','Evento restaurado com sucesso.');
+ }catch(err){alert('Não foi possível restaurar: '+errorText(err))}
+}
+async function deleteSelectedEvent(e){
+ if(!currentUser||!eventPermissions.get(e.id)?.canManage||e.status==='archived')return;
+ if(!window.confirm('ATENÇÃO: excluir definitivamente "'+e.name+'"? Eventos com contribuições ou histórico financeiro serão bloqueados pelo banco.'))return;
+ const typed=window.prompt('Para confirmar a exclusão definitiva, digite EXCLUIR:');
+ if(typed!=='EXCLUIR'){if(typed!==null)alert('Confirmação incorreta. Nenhum evento foi excluído.');return}
+ try{
+  const {error}=await supabase.rpc('delete_event',{p_event_id:e.id});
+  if(error)throw error;
+  home();await loadEvents();message('dashMsg','Evento excluído definitivamente.');
+ }catch(err){alert('Exclusão não realizada: '+errorText(err))}
+}
+function setCashTab(tab){cashTab=tab;
+ $('cashActivityMenu').classList.toggle('hidden',tab!=='menu');$('cashActivityContent').classList.toggle('hidden',tab==='menu');
+ const map={summary:'Resumo financeiro',statement:'Extrato de movimentações',expense:'Registrar despesa',cancellations:'Cancelamentos'};
+ $('cashActivityTitle').textContent=map[tab]||'';
+ for(const id of ['cashSummary','cashStatement','cashRefresh','expenseSection','cancellationSection']){
+  const show=tab==='summary'&&['cashSummary','cashRefresh'].includes(id)||tab==='statement'&&['cashStatement','cashRefresh'].includes(id)||tab==='expense'&&id==='expenseSection'||tab==='cancellations'&&id==='cancellationSection';
+  $(id).classList.toggle('nav-away',!show);
+ }
+}
+function initCashCards(){const box=$('cashActivityCards');box.replaceChildren();
+ box.append(tile('Resumo financeiro','▤',()=>setCashTab('summary')));
+ box.append(tile('Extrato','☷',()=>setCashTab('statement')));
+ if(!eventReadOnly&&(cashCanManage||cashCanTreasury)){box.append(tile('Registrar despesa','＋',()=>setCashTab('expense')));box.append(tile('Cancelamentos','⊘',()=>setCashTab('cancellations')))}
+}
+$('archivedEventsBtn').addEventListener('click',()=>navigate('archivedEventsSection','Eventos arquivados'));
+$('navCreate').addEventListener('click',()=>showView('createSection','Criar evento'));
+$('navProfile').addEventListener('click',()=>showView('profileSection','Meu perfil'));
+
+async function showDashboard(user){currentUser=user;clearMessage('dashMsg');toggle(true);$('user').textContent=user.email||'Usuário autenticado';const {data:roleData,error:roleError}=await supabase.from('global_admins').select('user_id').eq('user_id',user.id).maybeSingle();admin=!!roleData;if(roleError)message('dashMsg','Não foi possível conferir sua permissão: '+errorText(roleError),true);$('role').textContent=admin?'Administrador principal':'Participante';$('createSection').classList.toggle('hidden',!admin);$('navCreate').classList.toggle('hidden',!admin);showView('home');$('membersSection').classList.add('hidden');$('contributionAdminSection').classList.add('hidden');await loadEvents();await loadProfile()}
+async function loadEvents(){
+ const container=$('events'), archived=$('archivedEventsList');container.textContent='Carregando eventos...';archived.textContent='Carregando...';eventPermissions.clear();
+ const {data,error}=await supabase.from('events').select('id,name,event_date,status').order('created_at',{ascending:false}).limit(100);
+ if(error){container.textContent='';message('dashMsg','Erro ao consultar eventos: '+errorText(error),true);return}
+ container.replaceChildren();archived.replaceChildren();
+ let activeCount=0, archivedCount=0;
+ for(const e of data||[]){
+  const isArchived=e.status==='archived';const target=isArchived?archived:container;
+  if(isArchived)archivedCount++;else activeCount++;
+  const [manage,treasury]=await Promise.all([supabase.rpc('can_manage_event',{p_event_id:e.id}),supabase.rpc('is_event_treasurer',{p_event_id:e.id})]);
+  eventPermissions.set(e.id,{canManage:manage.data===true&&!manage.error,canTreasury:treasury.data===true&&!treasury.error});
+  const btn=document.createElement('button');btn.type='button';btn.className='event event-open';btn.style.width='100%';btn.style.cursor='pointer';btn.style.color='inherit';
+  const info=document.createElement('span');const title=document.createElement('strong');title.textContent=e.name;
+  const subtitle=document.createElement('span');subtitle.className='muted';subtitle.textContent=(e.event_date?'Data: '+e.event_date+' · ':'')+(isArchived?'Arquivado':e.status);
+  info.append(title,subtitle);const arrow=document.createElement('span');arrow.className='event-arrow';arrow.textContent='›';btn.append(info,arrow);
+  btn.addEventListener('click',()=>openEventMenu(e,isArchived));target.append(btn);
+ }
+ if(!activeCount)container.textContent='Nenhum evento ativo por enquanto.';
+ if(!archivedCount)archived.textContent='Nenhum evento arquivado por enquanto.';
+}
+const MAX_FILE=10*1024*1024;
+function checkFile(f){if(!f)throw Error('Anexe o comprovante.');if(!['application/pdf','image/jpeg','image/png'].includes(f.type))throw Error('Formato permitido: PDF, JPG ou PNG.');if(f.size>MAX_FILE)throw Error('Limite de 10 MB.');}
+async function attachFile(eventId,paymentId,f){checkFile(f);const ext=f.type==='application/pdf'?'pdf':f.type==='image/png'?'png':'jpg';const path=`${eventId}/${paymentId}/${crypto.randomUUID()}.${ext}`;const {error:e}=await supabase.storage.from('gunga-comprovantes').upload(path,f,{contentType:f.type,upsert:false});if(e)throw e;const {error:r}=await supabase.rpc('attach_contribution_receipt',{p_payment_id:paymentId,p_receipt_path:path});if(r)throw r;}
+async function viewFile(path){const {data,error}=await supabase.storage.from('gunga-comprovantes').createSignedUrl(path,60);if(error)throw error;window.open(data.signedUrl,'_blank','noopener,noreferrer');}
+const localDate=()=>new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+const formatDate=d=>d?d.split('-').reverse().join('/'):'Não informada';
+const brl=value=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(value)||0);
+async function loadMyContributions(event){
+ financeEvent=event;
+ $('financeSection').classList.remove('hidden');
+ $('financeEventLabel').textContent='Evento: '+event.name;
+ clearMessage('financeMsg');
+ const target=$('financeSummary');target.textContent='Carregando contribuições...';
+ const {data,error}=await supabase.rpc('get_my_event_contributions_v2',{p_event_id:event.id});
+ if(financeEvent?.id!==event.id)return;
+ target.replaceChildren();
+ if(error){message('financeMsg','Não foi possível consultar suas contribuições: '+errorText(error),true);return}
+ if(!data?.length){const p=document.createElement('p');p.className='muted';p.textContent='Você ainda não possui contribuição cadastrada neste evento.';target.append(p);return}
+ for(const c of data){
+  const card=document.createElement('div');card.className='event';
+  const title=document.createElement('strong');title.textContent='Resumo da contribuição';card.append(title);
+  for(const [label,value] of [['Valor combinado',c.total_amount],['Pagamentos aprovados',c.approved_amount],['Aguardando aprovação',c.awaiting_amount],['Saldo devedor',c.outstanding_balance],['Crédito excedente',c.excess_credit]]){
+   const p=document.createElement('p');p.className='muted';p.style.margin='9px 0';p.textContent=label+': '+brl(value);card.append(p);
+  }
+  const detail=document.createElement('button');detail.className='secondary';detail.textContent='Ver histórico de pagamentos';
+  const history=document.createElement('div');history.className='hidden';
+  detail.addEventListener('click',async()=>{
+   if(!history.classList.contains('hidden')){history.classList.add('hidden');return}
+   history.classList.remove('hidden');history.textContent='Carregando histórico...';
+   const {data:payments,error:err}=await supabase.from('contribution_payments').select('id,amount,payment_date,status,rejection_reason,receipt_path').eq('contribution_id',c.contribution_id).order('created_at',{ascending:false});
+   history.replaceChildren();
+   if(err){history.textContent='Erro ao consultar histórico: '+errorText(err);return}
+   if(!payments?.length){history.textContent='Nenhum pagamento registrado.';return}
+   const labels={approved:'Aprovado',awaiting_approval:'Aguardando aprovação',pending:'Pendente',rejected:'Rejeitado'};
+   for(const p of payments){
+    const item=document.createElement('div');item.className='event';const line=document.createElement('p');line.className='muted';line.textContent=(p.payment_date||'Sem data')+' · '+brl(p.amount)+' · '+(labels[p.status]||p.status)+(p.rejection_reason?' · Motivo: '+p.rejection_reason:'');item.append(line);
+    if(p.receipt_path){const btn=document.createElement('button');btn.type='button';btn.className='secondary';btn.textContent='Visualizar comprovante';btn.addEventListener('click',async()=>{btn.disabled=true;try{await viewFile(p.receipt_path)}catch(e){alert('Erro: '+errorText(e))}finally{btn.disabled=false}});item.append(btn)}
+    else if(p.status==='awaiting_approval'){
+     const label=document.createElement('label');label.textContent='Anexar comprovante pendente';const input=document.createElement('input');input.type='file';input.accept='.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png';const btn=document.createElement('button');btn.type='button';btn.textContent='Enviar comprovante';const msg=document.createElement('p');msg.className='muted';
+     btn.addEventListener('click',async()=>{btn.disabled=true;msg.textContent='Enviando...';try{await attachFile(event.id,p.id,input.files[0]);msg.textContent='Comprovante anexado! Feche e abra o histórico para visualizar.';input.disabled=true}catch(e){msg.textContent='Erro: '+errorText(e);btn.disabled=false}});item.append(label,input,btn,msg);
+    }else{const note=document.createElement('p');note.className='muted';note.textContent='Sem comprovante.';item.append(note)}history.append(item);
+   }
+  });
+  const form=document.createElement('form');form.className='payment-form';
+  form.innerHTML=`<h4>Registrar pagamento</h4><p class="muted">O registro será enviado para aprovação. Comprovante obrigatório: PDF, JPG ou PNG, até 10 MB.</p><label>Valor pago (R$)</label><input name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="Ex.: 100,00"><label>Data do pagamento</label><input name="payment_date" type="date" required><label>Forma de pagamento</label><select name="payment_method" required><option value="">Selecione</option><option value="pix">Pix</option><option value="transferencia">Transferência</option><option value="dinheiro">Dinheiro</option><option value="outro">Outro</option></select><label>Comprovante (obrigatório)</label><input name="receipt" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required><label>Observação (opcional)</label><textarea name="notes" rows="2" maxlength="500"></textarea><div class="notice hidden" data-warning role="alert"></div><div class="row hidden" data-choice><button type="button" class="secondary" data-correct>Corrigir valor</button><button type="button" data-continue>Continuar</button></div><button type="submit" data-submit>Enviar para aprovação</button><div class="notice hidden" data-feedback role="status"></div>`;
+  form.elements.payment_date.value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+  const amountInput=form.elements.amount;
+  const warning=form.querySelector('[data-warning]'),choice=form.querySelector('[data-choice]'),feedback=form.querySelector('[data-feedback]'),submit=form.querySelector('[data-submit]');
+  let confirmedValue=null;
+  const resetWarning=()=>{confirmedValue=null;warning.classList.add('hidden');choice.classList.add('hidden');submit.classList.remove('hidden')};
+  amountInput.addEventListener('input',resetWarning);
+  form.querySelector('[data-correct]').addEventListener('click',()=>{resetWarning();amountInput.focus()});
+  form.querySelector('[data-continue]').addEventListener('click',()=>{confirmedValue=Number(amountInput.value);warning.classList.add('hidden');choice.classList.add('hidden');submit.classList.remove('hidden');submit.click()});
+  form.addEventListener('submit',async ev=>{
+   ev.preventDefault();feedback.classList.add('hidden');
+   const amount=Number(amountInput.value);
+   if(!Number.isFinite(amount)||amount<=0||!form.reportValidity())return;
+   try{checkFile(form.elements.receipt.files[0])}catch(e){feedback.textContent=errorText(e);feedback.classList.remove('hidden');feedback.classList.add('error');return}
+   const {data:latest,error:balanceError}=await supabase.rpc('get_contribution_balance',{p_contribution_id:c.contribution_id});
+   if(balanceError){feedback.textContent='Não foi possível conferir o saldo: '+errorText(balanceError);feedback.classList.remove('hidden');feedback.classList.add('error');return}
+   const balance=Array.isArray(latest)?latest[0]:latest;
+   const due=Number(balance?.outstanding_balance||0);
+   if(amount>due && confirmedValue!==amount){
+    warning.textContent='Atenção! O valor informado excede o saldo devedor em '+brl(amount-due)+'. Deseja continuar com o pagamento?';
+    warning.classList.remove('hidden');choice.classList.remove('hidden');submit.classList.add('hidden');return;
+   }
+   submit.disabled=true;
+   try{
+    // Reserva o ID antes de enviar o comprovante: o banco exige o arquivo no INSERT.
+    const {data:paymentId,error:idError}=await supabase.rpc('generate_contribution_payment_id');
+    if(idError)throw idError;
+    if(!paymentId)throw Error('Não foi possível gerar o identificador do pagamento.');
+    const receiptFile=form.elements.receipt.files[0];
+    const ext=receiptFile.type==='application/pdf'?'pdf':receiptFile.type==='image/png'?'png':'jpg';
+    const receiptPath=`${event.id}/${paymentId}/${crypto.randomUUID()}.${ext}`;
+    feedback.textContent='Enviando comprovante...';feedback.classList.remove('hidden','error');
+    const {error:uploadError}=await supabase.storage.from('gunga-comprovantes').upload(receiptPath,receiptFile,{contentType:receiptFile.type,upsert:false});
+    if(uploadError)throw Error('Não foi possível enviar o comprovante: '+errorText(uploadError));
+    feedback.textContent='Comprovante enviado. Registrando pagamento...';
+    const {error:insertError}=await supabase.from('contribution_payments').insert({id:paymentId,contribution_id:c.contribution_id,amount:amount.toFixed(2),payment_date:form.elements.payment_date.value,payment_method:form.elements.payment_method.value,notes:form.elements.notes.value.trim()||null,status:'awaiting_approval',created_by:currentUser.id,receipt_path:receiptPath});
+    if(insertError)throw Error('Comprovante enviado, mas o pagamento não foi registrado: '+errorText(insertError)+'. Tente novamente; se o problema continuar, procure o administrador.');
+    feedback.textContent='Pagamento e comprovante registrados! Aguardando aprovação.';feedback.classList.remove('error','hidden');form.reset();resetWarning();
+    const reload=document.createElement('button');reload.type='button';reload.className='secondary';reload.textContent='Atualizar resumo';reload.addEventListener('click',()=>loadMyContributions(event));feedback.append(reload);
+   }catch(err){feedback.textContent='Erro ao registrar pagamento: '+errorText(err);feedback.classList.add('error');feedback.classList.remove('hidden')}
+   finally{submit.disabled=false}
+  });
+   card.append(detail,history);
+   target.append(card);
+   // Pagamentos aprovados são aplicados por ordem de vencimento.
+   const [partsResult,paymentsResult]=await Promise.all([
+     supabase.from('contribution_installments').select('installment_number,amount,due_date').eq('contribution_id',c.contribution_id).order('installment_number'),
+     supabase.from('contribution_payments').select('amount,status').eq('contribution_id',c.contribution_id)
+   ]);
+   if(financeEvent?.id!==event.id)return;
+   if(partsResult.error||paymentsResult.error){appendText(card,'Não foi possível consultar o cronograma: '+errorText(partsResult.error||paymentsResult.error));continue}
+   const meta=c,parts=partsResult.data||[],payments=paymentsResult.data||[];
+   const approvedCents=payments.filter(p=>p.status==='approved').reduce((sum,p)=>sum+contributionMoney(p.amount),0);
+   const awaitingCents=payments.filter(p=>p.status==='awaiting_approval').reduce((sum,p)=>sum+contributionMoney(p.amount),0);
+   let availableApproved=approvedCents;
+   const mode=meta.payment_mode==='free'?'free':'fixed';
+   appendText(card,mode==='free'?'Contribuição livre':'Parcelamento fixo','strong');
+   if(meta.description)appendText(card,meta.description);
+   const dueCents=Math.max(0,contributionMoney(c.total_amount)-approvedCents);
+   if(mode==='free'){
+      appendText(card,'Data limite: '+formatDate(meta.payment_deadline));
+      if(dueCents===0)appendText(card,'Quitada!');
+      else if(meta.payment_deadline&&localDate()>meta.payment_deadline)appendText(card,'Prazo encerrado · saldo restante: '+brl(dueCents/100));
+      else {
+       if(awaitingCents>0)appendText(card,'Pagamentos em análise: '+brl(awaitingCents/100));
+       const pay=document.createElement('button');pay.type='button';pay.textContent='Pagar contribuição';
+       pay.addEventListener('click',()=>openPaymentView(event,c,form,Math.max(0.01,(dueCents-awaitingCents)/100),'Contribuição livre · prazo: '+formatDate(meta.payment_deadline),true));card.append(pay);
+      }
+   }else if(!parts.length){appendText(card,'Nenhuma parcela configurada para esta contribuição.');}
+   else{
+     appendText(card,'Minhas parcelas','strong');
+     let availableAwaiting=awaitingCents;
+     for(const part of parts){
+       const value=contributionMoney(part.amount);
+       const paid=Math.min(value,Math.max(0,availableApproved));availableApproved-=paid;
+       const rest=value-paid;
+       const pending=Math.min(rest,Math.max(0,availableAwaiting));availableAwaiting-=pending;
+       const box=document.createElement('div');box.className='installment-box';
+       appendText(box,part.installment_number+'ª parcela · '+brl(value),'strong');
+       appendText(box,'Vencimento: '+formatDate(part.due_date));
+       appendText(box,rest===0?'Paga':paid>0?'Parcialmente paga · restante '+brl(rest/100):'Pendente · '+brl(rest/100));
+       if(pending>0)appendText(box,'Aguardando aprovação: '+brl(pending/100));
+       if(rest>0){const pay=document.createElement('button');pay.type='button';pay.textContent='Pagar parcela';
+         pay.addEventListener('click',()=>openPaymentView(event,c,form,Math.max(0.01,(rest-pending)/100),'Parcela '+part.installment_number+' · vencimento '+formatDate(part.due_date),false));
+         box.append(pay);
+       }
+       card.append(box);
+     }
+   }
+
+ }
+}
+
+
+function openPaymentView(event,contribution,form,suggestedAmount,context,free){
+ if(free&&suggestedAmount<=0){message('financeMsg','Já existe pagamento em análise para o saldo restante. Aguarde a aprovação.');return}
+ $('paymentContent').replaceChildren();
+ $('paymentContext').textContent=event.name+' · '+context+' · Saldo da contribuição: '+brl(contribution.outstanding_balance);
+ $('paymentContent').append(form);
+ form.elements.amount.value=Number(suggestedAmount).toFixed(2);
+ form.elements.amount.max=Number(contribution.outstanding_balance).toFixed(2);
+ form.elements.amount.readOnly=!free;
+ navigate('paymentSection','Pagar contribuição · '+event.name);
+}
+
+// Administracao de contribuicoes: usa RLS e RPCs existentes no banco.
+let contributionEvent=null;
+const contributionMoney=v=>Math.round(Number(v)*100);
+function addFlexibleRow(amount='',due=''){
+ const box=$('flexibleRows');if(box.children.length>=120)return;
+ const row=document.createElement('div');row.className='installment-row';
+ const a=document.createElement('label');a.textContent='Valor (R$)';const amountInput=document.createElement('input');amountInput.type='number';amountInput.min='0.01';amountInput.step='0.01';amountInput.required=true;amountInput.value=amount;a.append(amountInput);
+ const d=document.createElement('label');d.textContent='Vencimento';const dateInput=document.createElement('input');dateInput.type='date';dateInput.required=true;dateInput.value=due;d.append(dateInput);
+ const remove=document.createElement('button');remove.type='button';remove.className='secondary';remove.textContent='Remover esta parcela';remove.style.gridColumn='1 / -1';remove.style.marginTop='0';remove.addEventListener('click',()=>{row.remove();updateContributionPreview()});
+ row.append(a,d,remove);box.append(row);amountInput.addEventListener('input',updateContributionPreview);dateInput.addEventListener('input',updateContributionPreview);updateContributionPreview();
+}
+function flexibleData(){return [...$('flexibleRows').children].map(row=>({amount:row.querySelector('input[type=number]').value,due_date:row.querySelector('input[type=date]').value}))}
+function updateContributionPreview(){
+ const total=contributionMoney($('contributionAmount').value||0),free=$('installmentType').value==='free';
+ $('equalInstallmentFields').classList.toggle('hidden',free);
+ $('freeContributionFields').classList.toggle('hidden',!free);
+ $('flexibleInstallmentFields').classList.add('hidden');
+ $('installmentCount').required=!free;$('firstDueDate').required=!free;$('freeDeadline').required=free;
+ if(free){$('contributionPreview').textContent=total>0?'Contribuição livre de '+brl(total/100)+'. O participante escolhe quanto pagar até a data limite.':'';}
+ else{const n=Number($('installmentCount').value);$('contributionPreview').textContent=Number.isInteger(n)&&n>0&&total>0?'Parcelamento fixo em '+n+' parcela(s), total '+brl(total/100)+'.':'';}
+}
+$('installmentType').addEventListener('change',updateContributionPreview);
+$('contributionAmount').addEventListener('input',updateContributionPreview);
+$('installmentCount').addEventListener('input',updateContributionPreview);
+async function openContributionManager(event){
+ if(!eventPermissions.get(event.id)?.canManage)return;
+ contributionEvent=event;$('contributionAdminSection').classList.remove('hidden');$('contributionEventLabel').textContent='Evento: '+event.name;clearMessage('contributionMsg');
+ $('contributorSelect').replaceChildren(new Option('Carregando participantes...',''));
+ const {data,error}=await supabase.rpc('gunga_list_participants',{p_event_id:event.id});
+ if(contributionEvent?.id!==event.id)return;
+ $('contributorSelect').replaceChildren(new Option('Selecione um participante',''));
+ if(error){message('contributionMsg','Não foi possível carregar participantes: '+errorText(error),true);return}
+ for(const person of data||[]){const label=(person.full_name||person.nickname||'Participante sem nome')+(person.nickname&&person.full_name?' ('+person.nickname+')':'');$('contributorSelect').add(new Option(label,person.user_id))}
+ await loadEventContributions(event);updateContributionPreview();
+}
+async function loadEventContributions(event){
+ const target=$('eventContributionList');target.textContent='Carregando...';
+ const {data,error}=await supabase.from('event_contributions').select('id,contributor_id,total_amount,description,created_at,payment_mode,payment_deadline').eq('event_id',event.id).order('created_at',{ascending:false}).limit(100);
+ if(contributionEvent?.id!==event.id)return;target.replaceChildren();
+ if(error){target.textContent='Erro: '+errorText(error);return}
+ if(!data?.length){target.textContent='Nenhuma contribuição cadastrada.';return}
+ const people=new Map([...$('contributorSelect').options].map(o=>[o.value,o.textContent]));
+ for(const c of data){const card=document.createElement('div');card.className='event';appendText(card,(people.get(c.contributor_id)||'Participante')+' · '+brl(c.total_amount),'strong');if(c.description)appendText(card,c.description);appendText(card,c.payment_mode==='free'?'Contribuição livre · prazo final: '+formatDate(c.payment_deadline):'Parcelamento fixo');
+  const {data:parts,error:partsError}=await supabase.from('contribution_installments').select('installment_number,amount,due_date').eq('contribution_id',c.id).order('installment_number');
+  if(partsError)appendText(card,'Não foi possível consultar parcelas: '+errorText(partsError));else if(!parts?.length&&c.payment_mode!=='free')appendText(card,'Sem parcelas configuradas.');else for(const part of parts)appendText(card,part.installment_number+'ª parcela · '+brl(part.amount)+' · '+part.due_date.split('-').reverse().join('/'));
+  target.append(card);
+ }
+}
+$('contributionRefresh').addEventListener('click',()=>{if(contributionEvent)loadEventContributions(contributionEvent)});
+$('contributionForm').addEventListener('submit',async ev=>{
+ ev.preventDefault();const event=contributionEvent;if(!event||!currentUser||!eventPermissions.get(event.id)?.canManage)return;
+ const button=$('contributionSubmit');clearMessage('contributionMsg');let createdId=null;
+ try{
+  const contributor=$('contributorSelect').value,total=Number($('contributionAmount').value),cents=contributionMoney(total),free=$('installmentType').value==='free';
+  if(!contributor||!Number.isFinite(total)||cents<=0||Math.abs(total*100-cents)>0.000001)throw Error('Selecione o participante e informe valor válido com até duas casas decimais.');
+  if(free){if(!$('freeDeadline').value)throw Error('Informe a data limite da contribuição livre.');if($('freeDeadline').value<localDate())throw Error('A data limite não pode estar no passado.');}
+  else{const count=Number($('installmentCount').value);if(!Number.isInteger(count)||count<1||count>120||!$('firstDueDate').value||cents<count)throw Error('Informe de 1 a 120 parcelas e o primeiro vencimento. Cada parcela precisa ter pelo menos R$ 0,01.');}
+  if(!window.confirm('Confirma o cadastro de '+brl(total)+' na modalidade '+(free?'contribuição livre':'parcelamento fixo')+'?'))return;
+  button.disabled=true;message('contributionMsg','Cadastrando contribuição...');
+  const payload={event_id:event.id,contributor_id:contributor,total_amount:total.toFixed(2),description:$('contributionDescription').value.trim()||null,created_by:currentUser.id,payment_mode:free?'free':'fixed',payment_deadline:free?$('freeDeadline').value:null};
+  const {data:created,error:createError}=await supabase.from('event_contributions').insert(payload).select('id').single();
+  if(createError)throw createError;createdId=created.id;
+  if(!free){const result=await supabase.rpc('generate_equal_installments',{p_contribution_id:createdId,p_installments:Number($('installmentCount').value),p_first_due_date:$('firstDueDate').value});if(result.error)throw result.error;}
+  $('contributionForm').reset();$('installmentCount').value='5';$('installmentType').value='equal';updateContributionPreview();
+  message('contributionMsg',free?'Contribuição livre cadastrada com sucesso!':'Parcelamento fixo cadastrado com sucesso!');await loadEventContributions(event);
+ }catch(err){message('contributionMsg',createdId?'ATENÇÃO: contribuição '+createdId+' foi criada, mas o parcelamento não foi concluído. Não cadastre novamente antes de verificar o registro. Erro: '+errorText(err):'Não foi possível cadastrar: '+errorText(err),true);if(createdId)await loadEventContributions(event)}
+ finally{button.disabled=false}
+});
+
+// Demonstrativo agregado por evento: nao exibe dados pessoais ou comprovantes.
+let cashEvent=null;let cashCanManage=false;let cashCanTreasury=false;
+async function loadEventCash(event){
+ cashEvent=event;
+ $('cashSection').classList.remove('hidden');
+ $('cashEventLabel').textContent='Evento: '+event.name;
+ clearMessage('cashMsg');
+ const summary=$('cashSummary'),statement=$('cashStatement');
+ summary.textContent='Carregando resumo financeiro...';
+ statement.textContent='Carregando extrato...';
+ const [summaryResult,statementResult]=await Promise.all([
+  supabase.rpc('get_event_financial_summary',{p_event_id:event.id}),
+  supabase.rpc('get_event_financial_statement',{p_event_id:event.id})
+ ]);
+ if(cashEvent?.id!==event.id)return;
+ await refreshExpensePermission(event);
+ if(cashEvent?.id!==event.id)return;
+ await loadCancellationPanel(event);
+ initCashCards();setCashTab(cashTab);
+ summary.replaceChildren();statement.replaceChildren();
+ if(summaryResult.error){
+  message('cashMsg','Não foi possível consultar o resumo: '+errorText(summaryResult.error),true);
+  summary.textContent='Resumo indisponível.';
+ }else{
+  const item=Array.isArray(summaryResult.data)?summaryResult.data[0]:summaryResult.data;
+  if(!item){summary.textContent='Resumo não disponível.'}
+  else{
+   const grid=document.createElement('div');grid.className='cash-grid';
+   for(const [label,value] of [
+    ['Receitas',brl(item.total_income)],['Despesas',brl(item.total_expense)],
+    ['Saldo disponível',brl(item.available_balance)],
+    ['Movimentações',String(item.transaction_count??0)]
+   ]){
+    const tile=document.createElement('div');tile.className='cash-tile';
+    const heading=document.createElement('span');heading.className='muted';heading.textContent=label;
+    const amount=document.createElement('strong');amount.textContent=value;
+    tile.append(heading,amount);grid.append(tile);
+   }
+   summary.append(grid);
+  }
+ }
+ if(statementResult.error){
+  message('cashMsg','Não foi possível consultar o extrato: '+errorText(statementResult.error),true);
+  statement.textContent='Extrato indisponível.';
+  return;
+ }
+ const transactions=statementResult.data||[];
+ if(!transactions.length){statement.textContent='Ainda não há movimentações neste evento.';return}
+ const typeLabels={income:'Receita',expense:'Despesa'};
+ for(const transaction of transactions){
+  const card=document.createElement('div');card.className='event';
+  const heading=document.createElement('strong');
+  heading.textContent=(typeLabels[transaction.transaction_type]||transaction.transaction_type||'Movimentação')+' · '+brl(transaction.amount);
+  const detail=document.createElement('p');detail.className='muted';
+  detail.textContent=[transaction.transaction_date,transaction.category,transaction.description].filter(Boolean).join(' · ');
+  const balance=document.createElement('p');balance.className='muted';
+  balance.textContent='Saldo acumulado: '+brl(transaction.balance);
+  card.append(heading,detail,balance);
+  if(!eventReadOnly&&transaction.transaction_type==='expense'&&(cashCanManage||cashCanTreasury)&&transaction.transaction_id){
+   const requestBtn=document.createElement('button');requestBtn.type='button';requestBtn.className='secondary';requestBtn.textContent='Solicitar cancelamento';
+   requestBtn.addEventListener('click',()=>requestCancellation(event,transaction,requestBtn));card.append(requestBtn);
+  }
+  statement.append(card);
+ }
+}
+$('cashRefresh').addEventListener('click',()=>{if(cashEvent)loadEventCash(cashEvent)});
+async function refreshExpensePermission(event){
+ const section=$('expenseSection');section.classList.add('hidden');cashCanManage=false;cashCanTreasury=false;$('cancellationSection').classList.add('hidden');
+ const [manage,treasury]=await Promise.all([
+  supabase.rpc('can_manage_event',{p_event_id:event.id}),
+  supabase.rpc('is_event_treasurer',{p_event_id:event.id})
+ ]);
+ if(cashEvent?.id!==event.id)return;
+ if(manage.error||treasury.error){message('cashMsg','Não foi possível conferir permissão para despesas: '+errorText(manage.error||treasury.error),true);return}
+ cashCanManage=manage.data===true;cashCanTreasury=treasury.data===true;section.classList.toggle('hidden',!(cashCanManage||cashCanTreasury));$('cancellationSection').classList.toggle('hidden',!(cashCanManage||cashCanTreasury));
+}
+// Cancelamentos: toda escrita passa pelas RPCs protegidas do Supabase.
+async function requestCancellation(event,transaction,button){
+ if(cashEvent?.id!==event.id)return;
+ const reason=window.prompt('Justificativa obrigatória para solicitar o cancelamento de '+brl(transaction.amount)+':');
+ if(reason===null)return;
+ if(!reason.trim()||reason.trim().length>1000){message('cancellationMsg','Informe uma justificativa de até 1000 caracteres.',true);return}
+ if(!window.confirm('Enviar solicitação de cancelamento? A despesa permanecerá no caixa até a aprovação do administrador.'))return;
+ button.disabled=true;clearMessage('cancellationMsg');
+ try{
+  const {error}=await supabase.rpc('request_expense_cancellation',{p_transaction_id:transaction.transaction_id,p_reason:reason.trim()});
+  if(error)throw error;
+  if(cashEvent?.id!==event.id)return;
+  await loadCancellationPanel(event);
+  message('cancellationMsg','Solicitação enviada! Aguardando análise do administrador.');
+ }catch(e){message('cancellationMsg','Não foi possível solicitar: '+errorText(e),true)}
+ finally{button.disabled=false}
+}
+async function reviewCancellation(event,request,approve,button){
+ if(cashEvent?.id!==event.id)return;
+ let rejectionReason=null;
+ if(approve){if(!window.confirm('Aprovar cancelamento de '+brl(request.transaction?.amount)+'? A despesa deixará de compor o saldo.'))return}
+ else{
+  rejectionReason=window.prompt('Motivo obrigatório da rejeição:');
+  if(rejectionReason===null)return;
+  if(!rejectionReason.trim()||rejectionReason.trim().length>1000){message('cancellationMsg','Informe o motivo da rejeição (até 1000 caracteres).',true);return}
+ }
+ button.disabled=true;clearMessage('cancellationMsg');
+ try{
+  const {error}=await supabase.rpc('review_expense_cancellation',{p_request_id:request.id,p_approve:approve,p_rejection_reason:approve?null:rejectionReason.trim()});
+  if(error)throw error;
+  if(cashEvent?.id!==event.id)return;
+  await loadEventCash(event);
+  message('cancellationMsg',approve?'Cancelamento aprovado! Caixa atualizado.':'Solicitação rejeitada. A despesa continua ativa.');
+ }catch(e){message('cancellationMsg','Não foi possível analisar: '+errorText(e),true)}
+ finally{button.disabled=false}
+}
+function appendText(parent,text,tag='p'){
+ const el=document.createElement(tag);el.className=tag==='p'?'muted':'';el.textContent=text;parent.append(el);return el;
+}
+async function loadCancellationPanel(event){
+ if(cashEvent?.id!==event.id||!(cashCanManage||cashCanTreasury))return;
+ const requestBox=$('cancellationRequests'),historyBox=$('cancelledExpenses');
+ requestBox.textContent='Carregando solicitações...';historyBox.textContent='Carregando histórico...';
+ const [requestsResult,expensesResult]=await Promise.all([
+  supabase.from('expense_cancellation_requests').select('id,transaction_id,requested_by,request_reason,status,reviewed_by,reviewed_at,rejection_reason,created_at').eq('event_id',event.id).order('created_at',{ascending:false}).limit(100),
+  supabase.from('event_financial_transactions').select('id,amount,transaction_date,category,description,status,cancellation_reason,cancelled_by,cancelled_at,receipt_path').eq('event_id',event.id).eq('transaction_type','expense').order('created_at',{ascending:false}).limit(200)
+ ]);
+ if(cashEvent?.id!==event.id)return;
+ requestBox.replaceChildren();historyBox.replaceChildren();
+ if(requestsResult.error){appendText(requestBox,'Erro ao consultar solicitações: '+errorText(requestsResult.error));return}
+ if(expensesResult.error){appendText(historyBox,'Erro ao consultar despesas: '+errorText(expensesResult.error));return}
+ const expenses=expensesResult.data||[];
+ const byId=new Map(expenses.map(t=>[t.id,t]));
+ const requests=requestsResult.data||[];
+ if(!requests.length)appendText(requestBox,'Nenhuma solicitação registrada neste evento.');
+ const statuses={pending:'Aguardando análise',approved:'Aprovada',rejected:'Rejeitada'};
+ for(const r of requests){
+  const t=byId.get(r.transaction_id);
+  const card=document.createElement('div');card.className='event';
+  appendText(card,(t?t.description:'Despesa #'+r.transaction_id)+' · '+(t?brl(t.amount):'Valor indisponível'),'strong');
+  appendText(card,'Situação: '+(statuses[r.status]||r.status)+' · Solicitada em: '+new Date(r.created_at).toLocaleString('pt-BR'));
+  appendText(card,'Justificativa: '+r.request_reason);
+  appendText(card,'Solicitado por: '+r.requested_by);
+  if(r.reviewed_at)appendText(card,'Analisada em: '+new Date(r.reviewed_at).toLocaleString('pt-BR')+' · Por: '+r.reviewed_by);
+  if(r.rejection_reason)appendText(card,'Motivo da rejeição: '+r.rejection_reason);
+  if(r.status==='pending'&&cashCanManage){
+   const approve=document.createElement('button');approve.type='button';approve.textContent='Aprovar cancelamento';
+   const reject=document.createElement('button');reject.type='button';reject.className='secondary';reject.textContent='Rejeitar solicitação';
+   const req={...r,transaction:t};
+   approve.addEventListener('click',()=>reviewCancellation(event,req,true,approve));
+   reject.addEventListener('click',()=>reviewCancellation(event,req,false,reject));
+   card.append(approve,reject);
+  }
+  requestBox.append(card);
+ }
+ const cancelled=expenses.filter(t=>t.status==='cancelled');
+ if(!cancelled.length)appendText(historyBox,'Nenhuma despesa cancelada neste evento.');
+ for(const t of cancelled){
+  const card=document.createElement('div');card.className='event';
+  appendText(card,t.description+' · '+brl(t.amount),'strong');
+  appendText(card,[t.transaction_date,t.category,'CANCELADA'].filter(Boolean).join(' · '));
+  appendText(card,'Motivo: '+(t.cancellation_reason||'Não informado'));
+  appendText(card,'Cancelada em: '+(t.cancelled_at?new Date(t.cancelled_at).toLocaleString('pt-BR'):'Não informado')+' · Por: '+(t.cancelled_by||'Não informado'));
+  if(t.receipt_path){
+   const proof=document.createElement('button');proof.type='button';proof.className='secondary';proof.textContent='Ver comprovante original';
+   proof.addEventListener('click',async()=>{proof.disabled=true;try{await viewFile(t.receipt_path)}catch(e){message('cancellationMsg','Erro ao abrir comprovante: '+errorText(e),true)}finally{proof.disabled=false}});
+   card.append(proof);
+  }
+  historyBox.append(card);
+ }
+}
+$('cancellationRefresh').addEventListener('click',()=>{if(cashEvent)loadCancellationPanel(cashEvent)});
+
+$('expenseForm').addEventListener('submit',async ev=>{
+ ev.preventDefault();
+ if(!cashEvent||!currentUser)return;
+ const event={...cashEvent};
+ const submit=$('expenseSubmit');submit.disabled=true;clearMessage('expenseMsg');
+ try{
+  const amount=Number($('expenseAmount').value);
+  if(!Number.isFinite(amount)||amount<=0||Math.round(amount*100)!==amount*100)throw Error('Informe um valor válido com até duas casas decimais.');
+  const file=$('expenseReceipt').files[0];checkFile(file);
+  const category=$('expenseCategory').value;
+  const description=$('expenseDescription').value.trim();
+  if(!category||!description||!$('expenseDate').value)throw Error('Preencha todos os campos.');
+  if(!window.confirm('Confirma o lançamento da despesa de '+brl(amount)+' no evento '+event.name+'? O lançamento não poderá ser editado.'))return;
+  const {data:id,error:idError}=await supabase.rpc('generate_contribution_payment_id');
+  if(idError||!id)throw Error('Não foi possível gerar o identificador: '+errorText(idError));
+  const ext=file.type==='application/pdf'?'pdf':file.type==='image/png'?'png':'jpg';
+  const path=`despesas/${event.id}/${id}/${crypto.randomUUID()}.${ext}`;
+  message('expenseMsg','Enviando comprovante...');
+  const {error:uploadError}=await supabase.storage.from('gunga-comprovantes').upload(path,file,{contentType:file.type,upsert:false});
+  if(uploadError)throw Error('Falha no envio do comprovante: '+errorText(uploadError));
+  message('expenseMsg','Comprovante enviado. Registrando despesa...');
+  const {error:saveError}=await supabase.rpc('register_event_expense',{
+   p_expense_id:id,p_event_id:event.id,p_amount:amount.toFixed(2),
+   p_transaction_date:$('expenseDate').value,p_category:category,
+   p_description:description,p_receipt_path:path
+  });
+  if(saveError)throw Error('Arquivo enviado, mas despesa não registrada: '+errorText(saveError)+'. Procure o administrador antes de tentar novamente.');
+  $('expenseForm').reset();
+  message('expenseMsg','Despesa registrada com sucesso!');
+  await loadEventCash(event);
+  message('expenseMsg','Despesa registrada com sucesso! Caixa atualizado.');
+ }catch(e){message('expenseMsg','Erro: '+errorText(e),true)}
+ finally{submit.disabled=false}
+});
+$('expenseDate').value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+
+
+let approvalEvent=null;
+async function loadPendingApprovals(event){
+ approvalEvent=event;
+ $('approvalSection').classList.remove('hidden');
+ $('approvalEventLabel').textContent='Evento: '+event.name;
+ clearMessage('approvalMsg');
+ const target=$('approvalList');target.textContent='Carregando pagamentos...';
+ const {data,error}=await supabase.rpc('get_pending_event_payments',{p_event_id:event.id});
+ if(approvalEvent?.id!==event.id)return;
+ target.replaceChildren();
+ if(error){message('approvalMsg','Não foi possível consultar pagamentos: '+errorText(error),true);return}
+ if(!data?.length){target.textContent='Nenhum pagamento aguardando aprovação.';return}
+ const total=data.reduce((sum,p)=>sum+Number(p.amount||0),0);
+ const summary=document.createElement('p');summary.className='muted';summary.textContent=data.length+' pagamento(s) · '+brl(total)+' aguardando aprovação';target.append(summary);
+ for(const payment of data){
+  const card=document.createElement('div');card.className='event';
+  const title=document.createElement('strong');title.textContent=(payment.contributor_name||'Participante')+(payment.contributor_nickname?' ('+payment.contributor_nickname+')':'');card.append(title);
+  const info=document.createElement('p');info.className='muted';info.textContent=brl(payment.amount)+' · '+(payment.payment_date||'Sem data')+' · '+(payment.payment_method||'Forma não informada');card.append(info);
+  if(payment.notes){const note=document.createElement('p');note.className='muted';note.textContent='Observação: '+payment.notes;card.append(note)}
+  const proof=document.createElement('button');proof.type='button';proof.className='secondary';proof.textContent='Visualizar comprovante';
+  proof.addEventListener('click',async()=>{proof.disabled=true;try{
+   if(!payment.receipt_path)throw new Error('Pagamento sem comprovante.');
+   const {data:link,error:linkError}=await supabase.storage.from('gunga-comprovantes').createSignedUrl(payment.receipt_path,120);
+   if(linkError)throw linkError;
+   window.open(link.signedUrl,'_blank','noopener,noreferrer');
+  }catch(e){message('approvalMsg','Erro ao abrir comprovante: '+errorText(e),true)}finally{proof.disabled=false}});card.append(proof);
+  const feedback=document.createElement('div');feedback.className='notice hidden';feedback.setAttribute('role','status');
+  if(payment.created_by===currentUser?.id){const own=document.createElement('p');own.className='muted';own.textContent='Você registrou este pagamento e não pode revisá-lo.';card.append(own)}
+  else {
+   const approve=document.createElement('button');approve.type='button';approve.textContent='Aprovar pagamento';
+   const reject=document.createElement('button');reject.type='button';reject.className='secondary';reject.textContent='Rejeitar pagamento';
+   const rejectForm=document.createElement('div');rejectForm.className='hidden';
+   const reasonLabel=document.createElement('label');reasonLabel.textContent='Motivo da rejeição (obrigatório)';
+   const reason=document.createElement('textarea');reason.rows=3;reason.maxLength=1000;reason.placeholder='Explique o motivo ao participante';
+   const confirmReject=document.createElement('button');confirmReject.type='button';confirmReject.textContent='Confirmar rejeição';
+   rejectForm.append(reasonLabel,reason,confirmReject);
+   const review=async(decision)=>{
+    if(decision==='rejected'&&!reason.value.trim()){feedback.textContent='Informe o motivo da rejeição.';feedback.classList.remove('hidden');feedback.classList.add('error');return}
+    if(decision==='approved'&&!window.confirm('Confirma a aprovação de '+brl(payment.amount)+'? O valor será lançado no caixa do evento.'))return;
+    approve.disabled=reject.disabled=confirmReject.disabled=true;
+    feedback.textContent='Processando revisão...';feedback.classList.remove('hidden','error');
+    try{const {error:reviewError}=await supabase.rpc('review_contribution_payment',{p_payment_id:payment.payment_id,p_decision:decision,p_reason:decision==='rejected'?reason.value.trim():null});if(reviewError)throw reviewError;
+     message('approvalMsg',decision==='approved'?'Pagamento aprovado! Receita registrada no caixa.':'Pagamento rejeitado com justificativa.');await loadPendingApprovals(event);
+    }catch(e){feedback.textContent='Não foi possível revisar: '+errorText(e);feedback.classList.add('error')}
+    finally{approve.disabled=reject.disabled=confirmReject.disabled=false}
+   };
+   approve.addEventListener('click',()=>review('approved'));
+   reject.addEventListener('click',()=>rejectForm.classList.toggle('hidden'));
+   confirmReject.addEventListener('click',()=>review('rejected'));
+   card.append(approve,reject,rejectForm);
+  }
+  card.append(feedback);target.append(card);
+ }
+}
+
+$('loginForm').addEventListener('submit',async ev=>{ev.preventDefault();clearMessage('loginMsg');$('loginBtn').disabled=true;try{const {data,error}=await supabase.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;if(!data.user)throw new Error('Login não retornou usuário.');$('password').value='';await showDashboard(data.user)}catch(e){message('loginMsg','Não foi possível entrar: '+errorText(e),true)}finally{$('loginBtn').disabled=false}});
+$('eventForm').addEventListener('submit',async ev=>{ev.preventDefault();if(!admin||!currentUser)return;clearMessage('dashMsg');$('eventBtn').disabled=true;try{const name=$('eventName').value.trim();if(!name)throw new Error('Informe o nome do evento.');const payload={name,created_by:currentUser.id};if($('eventDate').value)payload.event_date=$('eventDate').value;const {error}=await supabase.from('events').insert(payload);if(error)throw error;$('eventForm').reset();message('dashMsg','Evento criado com sucesso!');await loadEvents()}catch(e){message('dashMsg','Erro ao criar evento: '+errorText(e),true)}finally{$('eventBtn').disabled=false}});
+
+async function selectEvent(e){
+ if(!eventPermissions.get(e.id)?.canManage)return;
+ selectedEvent=e;$('membersSection').classList.remove('hidden');$('selectedEventLabel').textContent='Evento: '+e.name;
+ $('memberControls').classList.remove('hidden');clearMessage('memberMsg');await loadMembers();
+}
+async function loadMembers(){
+ if(!selectedEvent||!eventPermissions.get(selectedEvent.id)?.canManage)return;
+ const event={...selectedEvent};const el=$('memberList'),team=$('teamSelectors');
+ el.textContent='Carregando...';team.replaceChildren();
+ const {data,error}=await supabase.rpc('gunga_list_participants',{p_event_id:event.id});
+ if(selectedEvent?.id!==event.id)return;
+ el.replaceChildren();if(error){message('memberMsg','Erro ao consultar participantes: '+errorText(error),true);return}
+ const members=data||[];
+ const roleNames={admin:'Administrador principal',event_admin:'Administrador do evento',treasurer:'Tesoureiro',participant:'Participante'};
+ const nameOf=p=>(p.full_name||p.nickname||'Usuário sem nome')+(p.nickname&&p.full_name?' ('+p.nickname+')':'');
+ const admins=members.filter(p=>p.role==='admin');
+ const treasurers=members.filter(p=>p.role==='treasurer').sort((a,b)=>nameOf(a).localeCompare(nameOf(b),'pt-BR'));
+ function createPicker(title,selectedId,eligible,onSelect,disabled=false){
+  const label=document.createElement('label');label.textContent=title;const select=document.createElement('select');
+  select.setAttribute('aria-label',title);select.disabled=disabled;
+  const empty=document.createElement('option');empty.value='';empty.textContent='— Não atribuído —';select.append(empty);
+  for(const p of eligible){const opt=document.createElement('option');opt.value=p.user_id;opt.textContent=nameOf(p);select.append(opt)}
+  select.value=selectedId||'';
+  select.addEventListener('change',async()=>{
+   const next=select.value;select.disabled=true;clearMessage('teamMsg');
+   try{await onSelect(next);message('teamMsg','Equipe atualizada com sucesso.');await loadMembers()}
+   catch(err){message('teamMsg','Não foi possível atualizar a equipe: '+errorText(err),true);select.value=selectedId||'';select.disabled=false}
+  });team.append(label,select);
+ }
+ const mainAdmin=admins[0];
+ const assignedAdmins=members.filter(p=>p.role==='event_admin');
+ const assigned=assignedAdmins[0];
+ const principal=document.createElement('p');principal.className='muted';
+ principal.textContent='Administrador principal atual: '+(mainAdmin?nameOf(mainAdmin):'Nenhum vinculado')+'. A administração global permanece independente deste cargo.';
+ team.append(principal);
+ if(admin){
+  const reclaim=document.createElement('button');reclaim.type='button';reclaim.className='secondary';
+  reclaim.textContent=mainAdmin?.user_id===currentUser?.id?'Administração principal já está com você':'Retomar administração principal deste evento';
+  reclaim.disabled=mainAdmin?.user_id===currentUser?.id;
+  reclaim.addEventListener('click',async()=>{
+   if(!window.confirm('Retomar para sua conta global a administração principal deste evento? O administrador atual perderá esse cargo.'))return;
+   reclaim.disabled=true;clearMessage('teamMsg');
+   try{const {error}=await supabase.rpc('reclaim_event_admin',{p_event_id:event.id});if(error)throw error;
+    message('teamMsg','Administração principal retomada com sucesso.');await loadMembers();await loadEvents();
+   }catch(err){message('teamMsg','Não foi possível retomar a administração: '+errorText(err),true);reclaim.disabled=false}
+  });team.append(reclaim);
+ }
+ createPicker('Administrador designado do evento',assigned?.user_id,
+  members.filter(p=>p.role==='participant'||p.role==='treasurer'||p.role==='event_admin'),
+  async next=>{
+   if(next===assigned?.user_id)return;
+   if(!window.confirm(next?'Designar este participante como administrador do evento?':'Remover o administrador designado deste evento?'))throw Error('Operação cancelada.');
+   const {error}=await supabase.rpc('assign_event_admin',{p_event_id:event.id,p_new_admin_id:next||null});
+   if(error)throw error;
+  },!admin);
+ if(!admin){const info=document.createElement('p');info.className='muted';info.textContent='Somente o administrador global pode designar o administrador do evento.';team.append(info)}
+ for(let i=0;i<2;i++){
+  const current=treasurers[i];
+  const eligible=members.filter(p=>p.role==='participant'||p.user_id===current?.user_id);
+  createPicker('Tesoureiro '+(i+1),current?.user_id,eligible,async next=>{
+   if(next===current?.user_id)return;
+   if(!window.confirm('Confirmar alteração de Tesoureiro '+(i+1)+'?'))throw new Error('Operação cancelada.');
+   let fn,args;
+   if(current&&next){fn='replace_event_treasurer';args={p_event_id:event.id,p_old_user_id:current.user_id,p_new_user_id:next}}
+   else if(current){fn='manage_event_treasurer';args={p_event_id:event.id,p_user_id:current.user_id,p_make_treasurer:false}}
+   else if(next){fn='manage_event_treasurer';args={p_event_id:event.id,p_user_id:next,p_make_treasurer:true}}
+   else return;
+   const {error}=await supabase.rpc(fn,args);if(error)throw error;
+  });
+ }
+ if(!members.length){el.textContent='Ainda não há participantes vinculados.';return}
+ for(const p of members){const div=document.createElement('div');div.className='event';appendText(div,nameOf(p)+' · '+(roleNames[p.role]||p.role),'strong');el.append(div)}
+}
+$('memberForm').addEventListener('submit',async ev=>{ev.preventDefault();if(!eventPermissions.get(selectedEvent?.id)?.canManage||!selectedEvent)return;clearMessage('memberMsg');$('memberBtn').disabled=true;try{const {data,error}=await supabase.rpc('gunga_add_participant',{p_event_id:selectedEvent.id,p_email:$('memberEmail').value.trim()});if(error)throw error;if(data==='USUARIO_NAO_CADASTRADO'){const {data:inv,error:invError}=await supabase.functions.invoke('gunga-convidar',{body:{event_id:selectedEvent.id,email:$('memberEmail').value.trim()}});if(invError)throw invError;if(inv?.error)throw new Error(inv.error);message('memberMsg',inv?.message||'Convite enviado!');$('memberForm').reset();await loadMembers();return}message('memberMsg','Participante vinculado ao evento!');$('memberForm').reset();await loadMembers()}catch(e){message('memberMsg','Não foi possível vincular: '+errorText(e),true)}finally{$('memberBtn').disabled=false}});
+
+
+async function loadProfile(){
+ clearMessage('profileMsg');
+ const {data,error}=await supabase.from('profiles').select('full_name,nickname,graduation,capoeira_group,whatsapp,shirt_size').eq('id',currentUser.id).maybeSingle();
+ if(error){message('profileMsg','Não foi possível carregar seu perfil: '+errorText(error),true);return}
+ const p=data||{};
+ for(const [id,key] of [['fullName','full_name'],['nickname','nickname'],['graduation','graduation'],['capoeiraGroup','capoeira_group'],['whatsapp','whatsapp'],['shirtSize','shirt_size']])$(id).value=p[key]||'';
+}
+$('profileForm').addEventListener('submit',async ev=>{
+ ev.preventDefault();if(!currentUser)return;clearMessage('profileMsg');$('profileBtn').disabled=true;
+ try{
+ const phone=$('whatsapp').value.trim();if(phone && phone.replace(/\D/g,'').length<10)throw new Error('Informe o WhatsApp com DDD.');
+ const payload={id:currentUser.id,full_name:$('fullName').value.trim(),nickname:$('nickname').value.trim(),graduation:$('graduation').value.trim(),capoeira_group:$('capoeiraGroup').value.trim(),whatsapp:phone,shirt_size:$('shirtSize').value||null,updated_at:new Date().toISOString()};
+ if(!payload.full_name)throw new Error('Informe seu nome completo.');
+ const {error}=await supabase.from('profiles').upsert(payload,{onConflict:'id'});if(error)throw error;
+ message('profileMsg','Perfil salvo com sucesso! Seus dados estarão disponíveis nos próximos eventos.');
+ }catch(e){message('profileMsg','Não foi possível salvar: '+errorText(e),true)}finally{$('profileBtn').disabled=false}
+});
+$('logout').addEventListener('click',async()=>{await supabase.auth.signOut();currentUser=null;admin=false;selectedEvent=null;financeEvent=null;eventPermissions.clear();$('financeSection').classList.add('hidden');$('contributionAdminSection').classList.add('hidden');$('approvalSection').classList.add('hidden');$('cashSection').classList.add('hidden');$('expenseSection').classList.add('hidden');$('cancellationSection').classList.add('hidden');cashCanManage=false;cashCanTreasury=false;cashEvent=null;$('memberControls').classList.add('hidden');$('profileSection').classList.add('hidden');showView('home');toggle(false);clearMessage('loginMsg')});
+$('activateForm').addEventListener('submit',async ev=>{ev.preventDefault();clearMessage('activateMsg');const pw=$('newPassword').value;if(pw!==$('confirmPassword').value){message('activateMsg','As senhas não coincidem.',true);return}if(pw.length<8){message('activateMsg','Use pelo menos 8 caracteres.',true);return}$('activateBtn').disabled=true;try{const {data,error}=await supabase.auth.updateUser({password:pw});if(error)throw error;sessionStorage.removeItem('gunga_invite_pending');history.replaceState(null,'',location.pathname);$('activateForm').reset();if(data.user)await showDashboard(data.user);else {toggle(false);message('loginMsg','Senha criada! Entre com seu e-mail e a nova senha.')}}catch(e){message('activateMsg','Não foi possível criar a senha: '+errorText(e),true)}finally{$('activateBtn').disabled=false}});
+(async()=>{try{
+if(queryParams.has('token_hash') && inviteLink){const {error}=await supabase.auth.verifyOtp({token_hash:queryParams.get('token_hash'),type:queryParams.get('type')==='recovery'?'recovery':'invite'});if(error)throw error}
+const {data,error}=await supabase.auth.getUser();if(error&&error.name!=='AuthSessionMissingError')throw error;if(data?.user){if(sessionStorage.getItem('gunga_invite_pending')==='1')showActivation();else if(!queryParams.has('evento')) await showDashboard(data.user)}else if(sessionStorage.getItem('gunga_invite_pending')==='1')message('loginMsg','O convite não foi validado. Solicite um novo convite ao administrador.',true)}catch(e){message('loginMsg','Não foi possível ativar o convite: '+errorText(e),true)}finally{if(queryParams.has('evento'))await openPublicRegistration()}})();
+
+
+// Inscrições por modalidade. A autorização real é validada nas RPCs do Supabase.
+let registrationAdminEvent=null,contributorRegistrationEvent=null;
+let adminModalities=[],contributorModalities=[],publicModalities=[];
+const registrationLabels={pending:'Pendente',confirmed:'Confirmada',cancelled:'Cancelada'};
+const registrationTypes={external:'Visitante',contributor:'Contribuinte',courtesy:'Cortesia'};
+const moneyValue=x=>{const n=Number(x);if(!Number.isFinite(n)||n<0||Math.round(n*100)!==n*100&&Math.abs(Math.round(n*100)-n*100)>1e-6)throw Error('Informe um valor válido com até duas casas decimais.');return n};
+const booleanValue=v=>v==='true';
+function setOptions(select,rows,placeholder){select.replaceChildren(new Option(placeholder,''));for(const m of rows)select.add(new Option(m.name,m.id))}
+function modalityInfo(m,contributor=false){return (m.description||'')+' · '+(m.includes_shirt?'Inclui camisa':'Sem camisa')+' · '+(contributor?'Adicional: ':'Valor: ')+brl(contributor?m.contributor_price:m.price)}
+function updateModalityChoice(form,rows,detailId,shirtId,contributor=false){
+ const m=rows.find(x=>x.id===form.elements.modality_id.value);
+ $(detailId).textContent=m?modalityInfo(m,contributor):'Escolha uma modalidade.';
+ $(shirtId).classList.toggle('hidden',!m?.includes_shirt);
+ form.elements.shirt_size.required=!!m?.includes_shirt;
+ if(!m?.includes_shirt)form.elements.shirt_size.value='';
+}
+async function loadAdminModalities(event){
+ const {data,error}=await supabase.rpc('list_event_registration_modalities_v2',{p_event_id:event.id});
+ if(registrationAdminEvent?.id!==event.id)return;
+ if(error){message('registrationAdminMsg','Não foi possível carregar modalidades: '+errorText(error),true);return}
+ adminModalities=data||[];
+ const list=$('modalityList');list.replaceChildren();
+ for(const m of adminModalities){
+  const card=document.createElement('div');card.className='event';
+  appendText(card,m.name+(m.active?'':' · INATIVA'),'strong');
+  appendText(card,(m.description||'Sem descrição')+' · '+(m.includes_shirt?'Com camisa':'Sem camisa'));
+  appendText(card,'Visitante: '+brl(m.price)+' · Contribuinte: '+(m.available_to_contributors?brl(m.contributor_price):'Não disponível'));
+  const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Editar modalidade';
+  edit.addEventListener('click',()=>{const f=$('modalityForm');for(const k of ['name','description','price','contributor_price'])f.elements[k].value=m[k]??'';f.elements.modality_id.value=m.id;for(const k of ['includes_shirt','available_to_contributors','active'])f.elements[k].value=String(m[k]);f.scrollIntoView({behavior:'smooth'});});
+  card.append(edit);list.append(card);
+ }
+ if(!adminModalities.length)appendText(list,'Nenhuma modalidade cadastrada.');
+ setOptions($('courtesyModality'),adminModalities.filter(m=>m.active),'Selecione a modalidade');
+}
+function clearModalityForm(){const f=$('modalityForm');f.reset();f.elements.modality_id.value='';}
+$('clearModality').addEventListener('click',clearModalityForm);
+$('modalityForm').addEventListener('submit',async ev=>{
+ ev.preventDefault();const e=registrationAdminEvent;if(!e||!eventPermissions.get(e.id)?.canManage)return;
+ const f=ev.currentTarget,b=$('saveModality');b.disabled=true;clearMessage('registrationAdminMsg');
+ try{
+  const args={p_event_id:e.id,p_modality_id:f.elements.modality_id.value||null,p_name:f.elements.name.value.trim(),p_description:f.elements.description.value.trim()||null,p_price:moneyValue(f.elements.price.value),p_includes_shirt:booleanValue(f.elements.includes_shirt.value),p_available_to_contributors:booleanValue(f.elements.available_to_contributors.value),p_contributor_price:moneyValue(f.elements.contributor_price.value),p_active:booleanValue(f.elements.active.value)};
+  const {error}=await supabase.rpc('save_event_registration_modality_v2',args);if(error)throw error;
+  clearModalityForm();await loadAdminModalities(e);message('registrationAdminMsg','Modalidade salva com sucesso.');
+ }catch(err){message('registrationAdminMsg','Erro ao salvar modalidade: '+errorText(err),true)}finally{b.disabled=false}
+});
+async function openRegistrationAdmin(event){
+ registrationAdminEvent=event;$('registrationAdminEvent').textContent=event.name;clearMessage('registrationAdminMsg');$('courtesyResult').classList.add('hidden');clearModalityForm();
+ const {data,error}=await supabase.from('events').select('status,whatsapp_group_url').eq('id',event.id).single();
+ if(error)message('registrationAdminMsg','Erro ao carregar configuração: '+errorText(error),true);
+ else{$('registrationSettingsForm').elements.whatsapp_group_url.value=data.whatsapp_group_url||'';event.status=data.status;updateRegistrationOpenUI(event)}
+ await Promise.all([loadAdminModalities(event),refreshRegistrations(event)]);
+}
+async function refreshRegistrations(event){
+ const target=$('registrationAdminList');target.textContent='Carregando inscrições...';
+ const {data,error}=await supabase.rpc('list_event_registrations_v2',{p_event_id:event.id});
+ if(registrationAdminEvent?.id!==event.id)return;target.replaceChildren();
+ if(error){message('registrationAdminMsg','Erro ao listar inscrições: '+errorText(error),true);return}
+ const records=data||[];
+ $('registrationConfirmed').textContent=records.filter(r=>r.registration_status==='confirmed').length;
+ $('registrationPending').textContent=records.filter(r=>r.registration_status==='pending').length;
+ if(!records.length){appendText(target,'Nenhuma inscrição cadastrada.');return}
+ for(const r of records){
+  const card=document.createElement('div');card.className='event';
+  appendText(card,r.full_name+(r.nickname?' ('+r.nickname+')':''),'strong');
+  appendText(card,[r.graduation,r.capoeira_group,r.whatsapp].filter(Boolean).join(' · '));
+  appendText(card,(registrationTypes[r.registration_type]||r.registration_type)+' · '+(registrationLabels[r.registration_status]||r.registration_status));
+  appendText(card,'Modalidade: '+(r.modality_name||'Não informada')+' · '+(r.shirt_size?'Camisa '+r.shirt_size:'Sem camisa'));
+  appendText(card,'Valor devido: '+brl(r.amount_due)+' · Receita no caixa: '+(r.revenue_registered?'Sim':'Não'));
+  if(r.registration_status==='pending'&&['external','contributor'].includes(r.registration_type)){
+   const b=document.createElement('button');b.type='button';b.textContent=Number(r.amount_due)>0?'Confirmar recebimento e inscrição':'Confirmar inscrição sem cobrança';
+   b.addEventListener('click',async()=>{if(!confirm('Confirma que o valor de '+brl(r.amount_due)+' foi recebido (quando aplicável)? A confirmação poderá lançar receita no caixa.'))return;b.disabled=true;
+    const result=await supabase.rpc('confirm_registration_with_revenue',{p_registration_id:r.registration_id});
+    if(result.error){alert('Erro: '+errorText(result.error));b.disabled=false}else{message('registrationAdminMsg','Inscrição confirmada. Confira o lançamento no caixa.');await refreshRegistrations(event)}
+   });card.append(b);
+  }target.append(card);
+ }
+}
+function registrationPublicLink(event){const url=new URL('https://cardosodsoares-oss.github.io/gunga-eventos/');url.searchParams.set('evento',event.id);return url.href}
+function updateRegistrationOpenUI(event){
+ const open=event.status==='open';
+ $('registrationOpenStatus').textContent=open?'Inscrições ABERTAS · link disponível.':'Inscrições FECHADAS.';
+ $('toggleRegistrationOpen').textContent=open?'Encerrar inscrições':'Liberar inscrições';
+ $('toggleRegistrationOpen').disabled=event.status==='archived';
+ $('registrationLinkBox').classList.toggle('hidden',!open);
+ $('registrationLinkPreview').value=open?registrationPublicLink(event):'';
+}
+$('toggleRegistrationOpen').addEventListener('click',async()=>{
+ const e=registrationAdminEvent;if(!e||!eventPermissions.get(e.id)?.canManage)return;
+ if(e.status==='archived'){message('registrationAdminMsg','Evento arquivado não pode receber inscrições.',true);return}
+ const opening=e.status!=='open';
+ if(opening){
+  const {data,error}=await supabase.rpc('list_event_registration_modalities_v2',{p_event_id:e.id});
+  if(error){message('registrationAdminMsg','Erro ao conferir modalidades: '+errorText(error),true);return}
+  if(!(data||[]).some(m=>m.active)){message('registrationAdminMsg','Cadastre pelo menos uma modalidade ativa antes de abrir inscrições.',true);return}
+ }
+ if(!confirm(opening?'Liberar inscrições públicas deste evento?':'Encerrar inscrições públicas deste evento?'))return;
+ const b=$('toggleRegistrationOpen');b.disabled=true;
+ try{
+  const {data,error}=await supabase.rpc('set_event_registration_open',{p_event_id:e.id,p_open:opening});
+  if(error)throw error;e.status=data;updateRegistrationOpenUI(e);
+  message('registrationAdminMsg',opening?'Inscrições liberadas. Antes de divulgar, teste o fluxo completo.':'Inscrições encerradas.');
+  await loadEvents();
+ }catch(err){message('registrationAdminMsg','Erro ao alterar abertura: '+errorText(err),true)}finally{b.disabled=false}
+});
+$('refreshRegistrations').addEventListener('click',()=>{if(registrationAdminEvent)refreshRegistrations(registrationAdminEvent)});
+$('registrationSettingsForm').addEventListener('submit',async ev=>{
+ ev.preventDefault();const e=registrationAdminEvent;if(!e||!eventPermissions.get(e.id)?.canManage)return;
+ const f=ev.currentTarget,b=f.querySelector('button');b.disabled=true;
+ try{const url=f.elements.whatsapp_group_url.value.trim();if(url&&!/^https:\/\/chat\.whatsapp\.com\//i.test(url))throw Error('Use um link de convite do WhatsApp válido.');
+ const {error}=await supabase.rpc('set_event_registration_whatsapp',{p_event_id:e.id,p_url:url||null});if(error)throw error;message('registrationAdminMsg','Link do WhatsApp salvo.')}
+ catch(err){message('registrationAdminMsg','Erro: '+errorText(err),true)}finally{b.disabled=false}
+});
+$('copyRegistrationLink').addEventListener('click',async()=>{
+ if(!registrationAdminEvent||registrationAdminEvent.status!=='open')return;
+ const link=registrationPublicLink(registrationAdminEvent);
+ if(location.protocol==='file:')message('registrationAdminMsg','Link preparado para o Netlify. Ele só funcionará publicamente após publicar esta versão do aplicativo.');
+ try{await navigator.clipboard.writeText(link);message('registrationAdminMsg','Link copiado! Faça testes antes de divulgar.')}catch(e){window.prompt('Copie o link:',link)}
+});
+$('generateCourtesy').addEventListener('click',async()=>{
+ const e=registrationAdminEvent,id=$('courtesyModality').value;if(!e||!id){message('courtesyResult','Selecione uma modalidade.',true);return}
+ const b=$('generateCourtesy');b.disabled=true;
+ try{const {data,error}=await supabase.rpc('generate_modality_courtesy',{p_event_id:e.id,p_modality_id:id});if(error)throw error;message('courtesyResult','Código exclusivo: '+data)}
+ catch(err){message('courtesyResult','Erro: '+errorText(err),true)}finally{b.disabled=false}
+});
+async function openContributorRegistration(event){
+ contributorRegistrationEvent=event;$('contributorRegistrationEvent').textContent=event.name;clearMessage('contributorRegistrationMsg');
+ const f=$('contributorRegistrationForm');f.elements.modality_id.replaceChildren(new Option('Carregando modalidades...',''));
+ const {data,error}=await supabase.rpc('get_contributor_registration_modalities',{p_event_id:event.id});
+ if(contributorRegistrationEvent?.id!==event.id)return;
+ if(error){f.classList.add('hidden');message('contributorRegistrationMsg','Não foi possível liberar a inscrição: '+errorText(error),true);return}
+ contributorModalities=data||[];f.classList.remove('hidden');setOptions(f.elements.modality_id,contributorModalities,'Selecione uma modalidade');
+ if(!contributorModalities.length)message('contributorRegistrationMsg','Nenhuma modalidade disponível para contribuintes neste evento.',true);
+ updateModalityChoice(f,contributorModalities,'contributorModalityDetail','contributorShirtWrap',true);
+}
+$('contributorRegistrationForm').elements.modality_id.addEventListener('change',()=>updateModalityChoice($('contributorRegistrationForm'),contributorModalities,'contributorModalityDetail','contributorShirtWrap',true));
+$('contributorRegistrationForm').addEventListener('submit',async ev=>{
+ ev.preventDefault();const e=contributorRegistrationEvent;if(!e)return;
+ const f=ev.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;
+ try{
+  const m=contributorModalities.find(x=>x.id===f.elements.modality_id.value);if(!m)throw Error('Selecione uma modalidade.');
+  const {data,error}=await supabase.rpc('register_contributor_with_modality',{p_event_id:e.id,p_modality_id:m.id,p_shirt_size:m.includes_shirt?f.elements.shirt_size.value:null});
+  if(error)throw error;
+  message('contributorRegistrationMsg',Number(m.contributor_price)>0?'Inscrição recebida! Adicional de '+brl(m.contributor_price)+' aguardando confirmação pela organização. Protocolo: '+data:'Inscrição confirmada sem cobrança adicional! Protocolo: '+data);
+ }catch(err){message('contributorRegistrationMsg','Não foi possível inscrever: '+errorText(err),true)}finally{b.disabled=false}
+});
+const publicEventId=new URLSearchParams(location.search).get('evento');
+async function openPublicRegistration(){
+ $('login').classList.add('hidden');$('dashboard').classList.add('hidden');$('activate').classList.add('hidden');$('publicRegistration').classList.remove('hidden');
+ const {data,error}=await supabase.rpc('get_public_event',{p_event_id:publicEventId});
+ const e=Array.isArray(data)?data[0]:data;
+ if(error||!e){$('publicRegistrationForm').classList.add('hidden');message('publicMsg','Evento não encontrado ou inscrições encerradas.',true);return}
+ $('publicEventInfo').textContent=e.name+(e.event_date?' · '+formatDate(e.event_date):'')+(e.description?' · '+e.description:'');
+ const {data:mods,error:modError}=await supabase.rpc('get_public_registration_modalities',{p_event_id:publicEventId});
+ const f=$('publicRegistrationForm');
+ if(modError){f.classList.add('hidden');message('publicMsg','Não foi possível carregar modalidades: '+errorText(modError),true);return}
+ publicModalities=mods||[];setOptions(f.elements.modality_id,publicModalities,'Selecione uma modalidade');
+ updateModalityChoice(f,publicModalities,'publicModalityDetail','publicShirtWrap');
+ if(!publicModalities.length){f.classList.add('hidden');message('publicMsg','Nenhuma modalidade disponível.',true)}
+}
+$('publicRegistrationForm').elements.modality_id.addEventListener('change',()=>updateModalityChoice($('publicRegistrationForm'),publicModalities,'publicModalityDetail','publicShirtWrap'));
+$('publicBack').addEventListener('click',()=>{history.replaceState({},'',location.pathname);$('publicRegistration').classList.add('hidden');$('login').classList.remove('hidden')});
+$('publicRegistrationForm').addEventListener('submit',async ev=>{
+ ev.preventDefault();const f=ev.currentTarget,b=$('publicSubmit');b.disabled=true;clearMessage('publicMsg');
+ try{
+  const m=publicModalities.find(x=>x.id===f.elements.modality_id.value);if(!m)throw Error('Selecione uma modalidade.');
+  const args={p_event_id:publicEventId,p_full_name:f.elements.full_name.value.trim(),p_nickname:f.elements.nickname.value.trim()||null,p_graduation:f.elements.graduation.value.trim()||null,p_capoeira_group:f.elements.capoeira_group.value.trim()||null,p_whatsapp:f.elements.whatsapp.value.trim(),p_shirt_size:m.includes_shirt?f.elements.shirt_size.value:null};
+  const code=f.elements.courtesy_code.value.trim();
+  const result=code?await supabase.rpc('register_modality_courtesy',{...args,p_code:code}):await supabase.rpc('register_external_participant',{...args,p_modality_id:m.id});
+  if(result.error)throw result.error;
+  message('publicMsg',code?'Cortesia confirmada! Protocolo: '+result.data:'Inscrição recebida! Valor: '+brl(m.price)+'. Aguarde a confirmação do recebimento pela organização. Protocolo: '+result.data);
+  f.reset();updateModalityChoice(f,publicModalities,'publicModalityDetail','publicShirtWrap');
+ }catch(err){message('publicMsg','Erro na inscrição: '+errorText(err),true)}finally{b.disabled=false}
+});
+
+</script></body></html>
