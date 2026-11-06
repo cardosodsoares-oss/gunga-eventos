@@ -360,7 +360,6 @@ async function loadMyContributions(event){
  if(!data?.length){const p=document.createElement('p');p.className='muted';p.textContent='Você ainda não possui contribuição cadastrada neste evento.';target.append(p);return}
  for(const c of data){
   const card=document.createElement('div');card.className='event';
-  const pick=document.createElement('label');pick.style.display='flex';pick.style.alignItems='center';pick.style.gap='10px';const check=document.createElement('input');check.type='checkbox';check.style.width='auto';check.checked=integrantesSelecionados.has(u.id);check.disabled=u.inactive;check.addEventListener('change',()=>{if(check.checked)integrantesSelecionados.add(u.id);else integrantesSelecionados.delete(u.id);$('integrantesSelecionados').textContent=integrantesSelecionados.size+' integrante(s) selecionado(s).'});pick.append(check,document.createTextNode('Selecionar integrante'));card.append(pick);
   const title=document.createElement('strong');title.textContent='Resumo da contribuição';card.append(title);
   for(const [label,value] of [['Valor combinado',c.total_amount],['Pagamentos aprovados',c.approved_amount],['Aguardando aprovação',c.awaiting_amount],['Saldo devedor',c.outstanding_balance],['Crédito excedente',c.excess_credit]]){
    const p=document.createElement('p');p.className='muted';p.style.margin='9px 0';p.textContent=label+': '+brl(value);card.append(p);
