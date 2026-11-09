@@ -1354,7 +1354,7 @@ async function openPublicRegistration(){
  const {data,error}=await supabase.rpc('get_public_event',{p_event_id:publicEventId});
  const e=Array.isArray(data)?data[0]:data;
  if(error||!e){$('publicRegistrationForm').classList.add('hidden');$('publicAccessBtn').classList.add('hidden');message('publicMsg','Evento indisponível para inscrições. Se o evento foi arquivado, o link público está encerrado.',true);return}
- $('publicAccessBtn').classList.add('hidden');loadBannerPreview(publicEventId,'publicEventBanner');
+ $('publicAccessBtn').classList.add('hidden');$('publicEmailGate').classList.remove('hidden');loadBannerPreview(publicEventId,'publicEventBanner');
  $('publicEventInfo').textContent=e.name+(e.event_date?' · '+formatDate(e.event_date):'')+(e.description?' · '+e.description:'');
  const {data:mods,error:modError}=await supabase.rpc('get_public_registration_modalities',{p_event_id:publicEventId});
  const f=$('publicRegistrationForm');f.classList.add('hidden');
@@ -1365,7 +1365,7 @@ async function openPublicRegistration(){
  for(const m of publicModalities)m.payment_methods=(publicPayments||[]).filter(x=>x.modality_id===m.id);
  setOptions(f.elements.modality_id,publicModalities,'Selecione uma modalidade');
  updateModalityChoice(f,publicModalities,'publicModalityDetail','publicShirtWrap');
- await refreshPublicGate();
+ try{await refreshPublicGate();}catch(err){$('publicEmailGate').classList.remove('hidden');message('publicMsg','Não foi possível verificar sua inscrição: '+errorText(err),true);}
 }
 $('publicRegistrationForm').elements.modality_id.addEventListener('change',()=>updateModalityChoice($('publicRegistrationForm'),publicModalities,'publicModalityDetail','publicShirtWrap'));
 $('publicBack').remove(); // Link público não oferece retorno ao login administrativo.
