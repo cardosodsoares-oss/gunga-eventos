@@ -12,7 +12,7 @@
 <label>Disponível para contribuinte quitado?</label><select name="available_to_contributors"><option value="true">Sim</option><option value="false">Não</option></select>
 <label>Adicional para contribuinte (R$)</label><input name="contributor_price" type="number" min="0" step="0.01" required value="0">
 <label>Modalidade ativa?</label><select name="active"><option value="true">Sim</option><option value="false">Não</option></select>
-<button type="submit" id="saveModality">Salvar modalidade</button><button type="button" id="clearModality" class="secondary">Nova modalidade / limpar formulário</button></form>
+<label>PIX / Copia e Cola (opcional)</label><textarea name="pix_data" rows="3" placeholder="Chave PIX ou código Copia e Cola"></textarea><label>Link de pagamento por cartão (opcional)</label><input name="card_data" type="url" placeholder="https://..."><p class="help">Preencha somente as formas de pagamento que deseja disponibilizar.</p><button type="submit" id="saveModality">Salvar modalidade e formas de pagamento</button><button type="button" id="clearModality" class="secondary">Nova modalidade / limpar formulário</button></form>
 </details><h4>Modalidades cadastradas</h4><div id="modalityList"></div>
 </div><div class="reg-activity hidden" data-reg-panel="courtesies"><h4 data-reg-activity="courtesies">Cortesias por modalidade</h4><label>Modalidade liberada pela cortesia</label><select id="courtesyModality"><option value="">Selecione uma modalidade</option></select><button id="generateCourtesy" type="button" class="secondary">Gerar código exclusivo</button><div id="courtesyResult" class="notice hidden"></div>
 </div><div class="reg-activity hidden" data-reg-panel="participants"><h4 data-reg-activity="participants">Participantes inscritos</h4><div id="registrationAdminList"></div><button type="button" id="refreshRegistrations" class="secondary">Atualizar inscrições</button>
@@ -1014,38 +1014,43 @@ async function loadAdminModalities(event){
   appendText(card,m.name+(m.active?'':' · INATIVA'),'strong');
   appendText(card,(m.description||'Sem descrição')+' · '+(m.includes_shirt?'Com camisa':'Sem camisa'));
   appendText(card,'Visitante: '+brl(m.price)+' · Contribuinte: '+(m.available_to_contributors?brl(m.contributor_price):'Não disponível'));
+  const badges=m.payment_methods.filter(x=>String(x.payment_data||'').trim()).map(x=>x.method==='pix'?'PIX':x.method==='card'?'Cartão':x.method);
+  appendText(card,'Pagamento: '+(badges.join(' · ')||'Não configurado'));
   const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Editar modalidade';
-  edit.addEventListener('click',()=>{$('modalityEditor').open=true;const f=$('modalityForm');for(const k of ['name','description','price','contributor_price'])f.elements[k].value=m[k]??'';f.elements.modality_id.value=m.id;for(const k of ['includes_shirt','available_to_contributors','active'])f.elements[k].value=String(m[k]);f.scrollIntoView({behavior:'smooth'});});
-  card.append(edit);
-  const methods=document.createElement('div');methods.className='payment-form';
-  appendText(methods,'Formas de pagamento cadastradas','strong');
-  for(const [kind,label] of [['pix','PIX / Copia e Cola'],['card','Cartão de crédito · link HTTPS']]){
-   const existing=m.payment_methods.find(x=>x.method===kind)?.payment_data||'';
-   const wrap=document.createElement('div');
-   const title=document.createElement('label');title.textContent=label;
-   const field=document.createElement('textarea');field.rows=kind==='pix'?3:2;field.value=existing;field.placeholder=kind==='pix'?'Chave PIX ou código Copia e Cola':'https://...';
-   const btn=document.createElement('button');btn.type='button';btn.className='secondary';btn.textContent='Salvar '+label;
-   const status=document.createElement('p');status.className='muted';status.textContent=existing?'✓ Cadastrado — você pode visualizar e editar acima.':'Não cadastrado.';
-   btn.addEventListener('click',async()=>{btn.disabled=true;try{
-    const value=field.value.trim();const {error}=await supabase.rpc('gunga_save_modality_payment_method',{p_modality_id:m.id,p_method:kind,p_payment_data:value||null});if(error)throw error;
-    status.textContent=value?'✓ Salvo com sucesso.':'Forma de pagamento removida.';status.classList.remove('error');
-   }catch(e){status.textContent='Erro: '+errorText(e);status.classList.add('error')}finally{btn.disabled=false}});
-   wrap.append(title,field,btn,status);methods.append(wrap);
-  }
-  card.append(methods);list.append(card);
+  edit.addEventListener('click',()=>{
+   $('modalityEditor').open=true;const f=$('modalityForm');
+   for(const k of ['name','description','price','contributor_price'])f.elements[k].value=m[k]??'';
+   f.elements.modality_id.value=m.id;
+   for(const k of ['includes_shirt','available_to_contributors','active'])f.elements[k].value=String(m[k]);
+   f.elements.pix_data.value=m.payment_methods.find(x=>x.method==='pix')?.payment_data||'';
+   f.elements.card_data.value=m.payment_methods.find(x=>x.method==='card')?.payment_data||'';
+   $('modalityEditor').querySelector('summary').textContent='Editar modalidade · '+m.name;
+   f.scrollIntoView({behavior:'smooth'});
+  });
+  card.append(edit);list.append(card);
  }
  if(!adminModalities.length)appendText(list,'Nenhuma modalidade cadastrada.');
  setOptions($('courtesyModality'),adminModalities.filter(m=>m.active),'Selecione a modalidade');
 }
-function clearModalityForm(){const f=$('modalityForm');f.reset();f.elements.modality_id.value='';$('modalityEditor').open=false;}
+function clearModalityForm(){const f=$('modalityForm');f.reset();f.elements.modality_id.value='';$('modalityEditor').open=false;$('modalityEditor').querySelector('summary').textContent='＋ Cadastrar nova modalidade';}
 $('clearModality').addEventListener('click',()=>{clearModalityForm();$('modalityEditor').open=true;});
 $('modalityForm').addEventListener('submit',async ev=>{
  ev.preventDefault();const e=registrationAdminEvent;if(!e||!eventPermissions.get(e.id)?.canManage)return;
  const f=ev.currentTarget,b=$('saveModality');b.disabled=true;clearMessage('registrationAdminMsg');
  try{
   const args={p_event_id:e.id,p_modality_id:f.elements.modality_id.value||null,p_name:f.elements.name.value.trim(),p_description:f.elements.description.value.trim()||null,p_price:moneyValue(f.elements.price.value),p_includes_shirt:booleanValue(f.elements.includes_shirt.value),p_available_to_contributors:booleanValue(f.elements.available_to_contributors.value),p_contributor_price:moneyValue(f.elements.contributor_price.value),p_active:booleanValue(f.elements.active.value)};
+  const cardUrl=f.elements.card_data.value.trim(),pix=f.elements.pix_data.value.trim();
+  if(cardUrl && !/^https:\/\/[^\s]+$/i.test(cardUrl))throw Error('O link do cartão deve começar com https://');
   const {error}=await supabase.rpc('save_event_registration_modality_v2',args);if(error)throw error;
-  clearModalityForm();await loadAdminModalities(e);message('registrationAdminMsg','Modalidade salva com sucesso.');
+  // Reconsulta a modalidade criada antes de gravar os meios de pagamento.
+  const {data:rows,error:readError}=await supabase.rpc('list_event_registration_modalities_v2',{p_event_id:e.id});if(readError)throw readError;
+  const id=args.p_modality_id || (rows||[]).filter(x=>x.name===args.p_name).sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')))[0]?.id;
+  if(!id)throw Error('Modalidade salva, mas não foi possível identificar o cadastro para salvar PIX/cartão. Atualize e edite a modalidade.');
+  for(const [kind,value] of [['pix',pix],['card',cardUrl]]){
+   const {error:methodError}=await supabase.rpc('gunga_save_modality_payment_method',{p_modality_id:id,p_method:kind,p_payment_data:value||null});
+   if(methodError)throw Error('Modalidade salva, mas houve falha ao salvar '+kind+': '+errorText(methodError));
+  }
+  clearModalityForm();await loadAdminModalities(e);message('registrationAdminMsg','Modalidade e formas de pagamento salvas com sucesso.');
  }catch(err){message('registrationAdminMsg','Erro ao salvar modalidade: '+errorText(err),true)}finally{b.disabled=false}
 });
 const registrationActivityNames={modalities:['Modalidades de inscrição','▤'],courtesies:['Gerenciar cortesias','✦'],settings:['Configurar WhatsApp','⚙'],opening:['Período e abertura','◷']};
@@ -1344,11 +1349,11 @@ $('publicCodeForm').addEventListener('submit',async ev=>{
  }catch(e){message('publicOtpMsg','Código inválido ou expirado: '+errorText(e),true)}finally{b.disabled=false}
 });
 async function openPublicRegistration(){
- $('login').classList.add('hidden');$('dashboard').classList.add('hidden');$('activate').classList.add('hidden');$('publicRegistration').classList.remove('hidden');
+ $('login').classList.add('hidden');$('dashboard').classList.add('hidden');$('activate').classList.add('hidden');$('publicRegistration').classList.remove('hidden');$('publicRegistrationForm').classList.add('hidden');$('publicEmailGate').classList.add('hidden');$('publicPaymentHelp').classList.add('hidden');clearMessage('publicMsg');
  const {data,error}=await supabase.rpc('get_public_event',{p_event_id:publicEventId});
  const e=Array.isArray(data)?data[0]:data;
- if(error||!e){$('publicRegistrationForm').classList.add('hidden');message('publicMsg','Evento não encontrado ou inscrições encerradas.',true);return}
- loadBannerPreview(publicEventId,'publicEventBanner');
+ if(error||!e){$('publicRegistrationForm').classList.add('hidden');$('publicAccessBtn').classList.add('hidden');message('publicMsg','Evento indisponível para inscrições. Se o evento foi arquivado, o link público está encerrado.',true);return}
+ $('publicAccessBtn').classList.remove('hidden');loadBannerPreview(publicEventId,'publicEventBanner');
  $('publicEventInfo').textContent=e.name+(e.event_date?' · '+formatDate(e.event_date):'')+(e.description?' · '+e.description:'');
  const {data:mods,error:modError}=await supabase.rpc('get_public_registration_modalities',{p_event_id:publicEventId});
  const f=$('publicRegistrationForm');f.classList.add('hidden');
@@ -1382,20 +1387,7 @@ $('publicRegistrationForm').addEventListener('submit',async ev=>{
   const protocol=document.createElement('p');protocol.className='muted';protocol.textContent='Protocolo: '+record.registration_id+' · E-mail: '+email;help.append(protocol);
   if(!code&&Number(m.price)>0){
    const value=document.createElement('p');value.textContent='Valor da modalidade: '+brl(m.price);help.append(value);
-   const methods=m.payment_methods||[];
-   const pix=String(methods.find(x=>x.method==='pix')?.payment_data||'').trim();
-   const cardLink=String(methods.find(x=>x.method==='card')?.payment_data||'').trim();
-   if(pix){
-    appendText(help,'Pagar com PIX','strong');
-    const codebox=document.createElement('textarea');codebox.readOnly=true;codebox.rows=3;codebox.value=pix;help.append(codebox);
-    const copy=document.createElement('button');copy.type='button';copy.className='secondary';copy.textContent='Copiar PIX';
-    copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(pix);copy.textContent='PIX copiado!'}catch(_){codebox.select();copy.textContent='Selecione e copie o código'}});help.append(copy);
-   }
-   if(cardLink){
-    appendText(help,'Pagar com cartão de crédito','strong');
-    const link=document.createElement('a');link.href=cardLink;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Abrir página de pagamento';link.style.color='#e9c77d';help.append(link);
-   }
-   if(!pix&&!cardLink)appendText(help,'O organizador ainda não disponibilizou os dados de pagamento. Confirme com a organização antes de pagar.');
+   // Os meios de pagamento aparecem uma única vez no cartão de acompanhamento logo abaixo.
    const warning=document.createElement('p');warning.className='muted';warning.textContent='Confira o valor e o destinatário antes de pagar. Após o pagamento, envie o comprovante abaixo, nesta mesma tela.';help.append(warning);
   }else{
    const free=document.createElement('p');free.className='muted';free.textContent=code?'A cortesia foi enviada para validação. Confira a situação pelo acompanhamento da inscrição.':'Esta modalidade não exige pagamento.';help.append(free);
@@ -1431,7 +1423,13 @@ async function renderRegistrationPayment(reg,target){
  appendText(card,registrationStatusLabel(reg,list),'strong');
  appendText(card,'Modalidade: '+(reg.modality_name||'Não informada'));
  appendText(card,'Valor da inscrição: '+brl(reg.amount_due));
- if(Number(reg.amount_due)>0 && reg.modality_id && reg.event_id){
+ if(reg.status==='confirmed' && reg.event_id){
+  // A data e a situação vêm do evento, sem depender do cadastro da modalidade.
+  const {data:eventInfo,error:eventInfoError}=await supabase.from('events').select('event_date,status').eq('id',reg.event_id).maybeSingle();
+  if(!eventInfoError && eventInfo?.event_date)appendText(card,'Data do evento: '+formatDate(eventInfo.event_date));
+  appendText(card,'Sua inscrição está confirmada. Não é necessário realizar outro pagamento.');
+ }
+ if(reg.status==='pending' && Number(reg.amount_due)>0 && reg.modality_id && reg.event_id && !list.some(r=>r.status==='pending'||r.status==='approved')){
   const {data:methods,error:methodsError}=await supabase.rpc('gunga_get_modality_payment_methods',{p_event_id:reg.event_id});
   if(!methodsError){
    const pix=methods?.find(x=>x.modality_id===reg.modality_id&&x.method==='pix')?.payment_data;
@@ -1440,7 +1438,7 @@ async function renderRegistrationPayment(reg,target){
    if(cardUrl){const a=document.createElement('a');a.href=cardUrl;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Pagar com cartão · abrir link';a.style.color='#e9c77d';card.append(a)}
   }
  }
- if(list.length){for(const r of list){appendText(card,'Comprovante: '+({pending:'Em análise',approved:'Aprovado',rejected:'Rejeitado'}[r.status]||r.status)+(r.review_notes?' · '+r.review_notes:''));}}
+ if(reg.status!=='confirmed' && list.length){for(const r of list){appendText(card,'Comprovante: '+({pending:'Em análise',approved:'Aprovado',rejected:'Rejeitado'}[r.status]||r.status)+(r.review_notes?' · '+r.review_notes:''));}}
  target.append(card);
  if(reg.registration_type==='external' && reg.status==='pending' && !list.some(r=>['pending','approved'].includes(r.status))){
   const wrap=document.createElement('div');wrap.className='event';
