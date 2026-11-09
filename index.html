@@ -1344,28 +1344,32 @@ $('publicCodeForm').addEventListener('submit',async ev=>{
   const token=ev.currentTarget.elements.code.value.trim();
   const {error}=await supabase.auth.verifyOtp({email,token,type:'email'});
   if(error)throw error;
-  await refreshPublicGate();
+  await loadVerifiedPublicRegistration();
   if(!publicMemberBlocked && !$('externalArea').classList.contains('hidden'))return;
   // A verificação decide automaticamente entre acompanhamento e novo cadastro.
  }catch(e){message('publicOtpMsg','Código inválido ou expirado: '+errorText(e),true)}finally{b.disabled=false}
 });
-async function openPublicRegistration(){
- $('login').classList.add('hidden');$('dashboard').classList.add('hidden');$('activate').classList.add('hidden');$('publicRegistration').classList.remove('hidden');$('publicRegistrationForm').classList.add('hidden');$('publicEmailGate').classList.add('hidden');$('publicPaymentHelp').classList.add('hidden');clearMessage('publicMsg');
- const {data,error}=await supabase.rpc('get_public_event',{p_event_id:publicEventId});
- const e=Array.isArray(data)?data[0]:data;
- if(error||!e){$('publicRegistrationForm').classList.add('hidden');$('publicAccessBtn').classList.add('hidden');message('publicMsg','Evento indisponível para inscrições. Se o evento foi arquivado, o link público está encerrado.',true);return}
- $('publicAccessBtn').classList.add('hidden');$('publicEmailGate').classList.remove('hidden');loadBannerPreview(publicEventId,'publicEventBanner');
- $('publicEventInfo').textContent=e.name+(e.event_date?' · '+formatDate(e.event_date):'')+(e.description?' · '+e.description:'');
+async function loadVerifiedPublicRegistration(){
+ const f=$('publicRegistrationForm');
  const {data:mods,error:modError}=await supabase.rpc('get_public_registration_modalities',{p_event_id:publicEventId});
- const f=$('publicRegistrationForm');f.classList.add('hidden');
- if(modError){f.classList.add('hidden');message('publicMsg','Não foi possível carregar modalidades: '+errorText(modError),true);return}
+ if(modError)throw modError;
  publicModalities=mods||[];
- const {data:publicPayments,error:paymentsError}=await supabase.rpc('gunga_get_modality_payment_methods',{p_event_id:publicEventId});
- if(paymentsError)message('publicMsg','Não foi possível consultar os dados de pagamento: '+errorText(paymentsError),true);
- for(const m of publicModalities)m.payment_methods=(publicPayments||[]).filter(x=>x.modality_id===m.id);
  setOptions(f.elements.modality_id,publicModalities,'Selecione uma modalidade');
  updateModalityChoice(f,publicModalities,'publicModalityDetail','publicShirtWrap');
- try{await refreshPublicGate();}catch(err){$('publicEmailGate').classList.remove('hidden');message('publicMsg','Não foi possível verificar sua inscrição: '+errorText(err),true);}
+ await refreshPublicGate();
+}
+async function openPublicRegistration(){
+ $('login').classList.add('hidden');$('dashboard').classList.add('hidden');$('activate').classList.add('hidden');
+ $('publicRegistration').classList.remove('hidden');$('publicRegistrationForm').classList.add('hidden');
+ $('publicEmailGate').classList.remove('hidden');$('publicPaymentHelp').classList.add('hidden');clearMessage('publicMsg');
+ $('publicCodeForm').classList.add('hidden');$('publicEmailStart').classList.remove('hidden');
+ $('publicAccessBtn').classList.add('hidden');
+ const {data,error}=await supabase.rpc('get_public_event',{p_event_id:publicEventId});
+ const e=Array.isArray(data)?data[0]:data;
+ if(error||!e){$('publicEmailGate').classList.add('hidden');message('publicMsg','Este evento não está disponível para inscrições. Se foi arquivado, o link está encerrado.',true);return}
+ $('publicEventInfo').textContent=e.name+(e.event_date?' · '+formatDate(e.event_date):'');
+ loadBannerPreview(publicEventId,'publicEventBanner').catch(()=>{});
+ // Não consulta inscrições, modalidades nem sessão antes da validação do código.
 }
 $('publicRegistrationForm').elements.modality_id.addEventListener('change',()=>updateModalityChoice($('publicRegistrationForm'),publicModalities,'publicModalityDetail','publicShirtWrap'));
 $('publicBack').remove(); // Link público não oferece retorno ao login administrativo.
@@ -1435,15 +1439,40 @@ async function renderRegistrationPayment(reg,target){
   if(!methodsError){
    const pix=methods?.find(x=>x.modality_id===reg.modality_id&&x.method==='pix')?.payment_data;
    const cardUrl=methods?.find(x=>x.modality_id===reg.modality_id&&x.method==='card')?.payment_data;
-   if(pix){appendText(card,'PIX para pagamento:','strong');const box=document.createElement('textarea');box.readOnly=true;box.value=pix;box.rows=3;card.append(box);const cp=document.createElement('button');cp.type='button';cp.className='secondary';cp.textContent='Copiar PIX';cp.addEventListener('click',()=>navigator.clipboard.writeText(pix).then(()=>cp.textContent='PIX copiado!').catch(()=>box.select()));card.append(cp)}
-   if(cardUrl){const a=document.createElement('a');a.href=cardUrl;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Pagar com cartão · abrir link';a.style.color='#e9c77d';card.append(a)}
+   const availableMethods=[];
+   if(pix)availableMethods.push({value:'pix',label:'PIX'});
+   if(cardUrl)availableMethods.push({value:'card',label:'Cartão de crédito'});
+   if(availableMethods.length){
+    const methodWrap=document.createElement('div');methodWrap.className='payment-form';
+    appendText(methodWrap,'Pagamento da inscrição','strong');
+    const methodSelect=document.createElement('select');
+    if(availableMethods.length>1){
+     const label=document.createElement('label');label.textContent='Selecione a forma de pagamento';methodWrap.append(label);
+     methodSelect.add(new Option('Selecione a forma de pagamento',''));
+     for(const m of availableMethods)methodSelect.add(new Option(m.label,m.value));
+     methodWrap.append(methodSelect);
+    }else methodSelect.add(new Option(availableMethods[0].label,availableMethods[0].value));
+    const methodContent=document.createElement('div');methodWrap.append(methodContent);
+    const renderMethod=()=>{
+     methodContent.replaceChildren();
+     if(methodSelect.value==='pix'){
+      appendText(methodContent,'PIX para pagamento:','strong');
+      const box=document.createElement('textarea');box.readOnly=true;box.value=pix;box.rows=2;methodContent.append(box);
+      const cp=document.createElement('button');cp.type='button';cp.className='secondary';cp.textContent='Copiar PIX';
+      cp.addEventListener('click',()=>navigator.clipboard.writeText(pix).then(()=>cp.textContent='PIX copiado!').catch(()=>box.select()));methodContent.append(cp);
+     }else if(methodSelect.value==='card'){
+      const a=document.createElement('a');a.href=cardUrl;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Pagar com cartão · abrir link';a.style.color='#e9c77d';a.style.display='block';a.style.margin='12px 0';methodContent.append(a);
+     }
+    };
+    methodSelect.addEventListener('change',renderMethod);renderMethod();card.append(methodWrap);
+   }else appendText(card,'Nenhuma forma de pagamento disponível. Entre em contato com a organização.');
   }
  }
  if(reg.status!=='confirmed' && list.length){for(const r of list){appendText(card,'Comprovante: '+({pending:'Em análise',approved:'Aprovado',rejected:'Rejeitado'}[r.status]||r.status)+(r.review_notes?' · '+r.review_notes:''));}}
  target.append(card);
  if(reg.registration_type==='external' && reg.status==='pending' && !list.some(r=>['pending','approved'].includes(r.status))){
-  const wrap=document.createElement('div');wrap.className='event';
-  appendText(wrap,'Alterar modalidade antes da aprovação','strong');
+  const wrap=document.createElement('details');wrap.className='event';
+  const summary=document.createElement('summary');summary.textContent='Alterar modalidade de inscrição';summary.style.cursor='pointer';summary.style.fontWeight='700';summary.style.color='#e9c77d';wrap.append(summary);
   const {data:available,error:modErr}=await supabase.rpc('get_public_registration_modalities',{p_event_id:reg.event_id});
   if(modErr){appendText(wrap,'Não foi possível carregar modalidades: '+errorText(modErr));}
   else{
